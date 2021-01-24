@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace EmuDotNet.Core
+﻿namespace EmuDotNet.Core
 {
     public class MC6800
     {
+        private readonly MC6800Registers _registers = new();
     }
 }
