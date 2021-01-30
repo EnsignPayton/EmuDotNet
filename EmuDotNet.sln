@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmuDotNet.Core", "src\EmuDo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmuDotNet.Core.Test", "test\EmuDotNet.Core.Test\EmuDotNet.Core.Test.csproj", "{C333F2A0-CC7E-4ACF-8D5E-B2E20F4090CA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmuDotNet.Console", "src\EmuDotNet.Console\EmuDotNet.Console.csproj", "{CBE84ED9-920B-46EC-BAD9-A86DAFEBFAD1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,5 +46,17 @@ Global
 		{C333F2A0-CC7E-4ACF-8D5E-B2E20F4090CA}.Release|x64.Build.0 = Release|Any CPU
 		{C333F2A0-CC7E-4ACF-8D5E-B2E20F4090CA}.Release|x86.ActiveCfg = Release|Any CPU
 		{C333F2A0-CC7E-4ACF-8D5E-B2E20F4090CA}.Release|x86.Build.0 = Release|Any CPU
+		{CBE84ED9-920B-46EC-BAD9-A86DAFEBFAD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBE84ED9-920B-46EC-BAD9-A86DAFEBFAD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBE84ED9-920B-46EC-BAD9-A86DAFEBFAD1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CBE84ED9-920B-46EC-BAD9-A86DAFEBFAD1}.Debug|x64.Build.0 = Debug|Any CPU
+		{CBE84ED9-920B-46EC-BAD9-A86DAFEBFAD1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CBE84ED9-920B-46EC-BAD9-A86DAFEBFAD1}.Debug|x86.Build.0 = Debug|Any CPU
+		{CBE84ED9-920B-46EC-BAD9-A86DAFEBFAD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBE84ED9-920B-46EC-BAD9-A86DAFEBFAD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CBE84ED9-920B-46EC-BAD9-A86DAFEBFAD1}.Release|x64.ActiveCfg = Release|Any CPU
+		{CBE84ED9-920B-46EC-BAD9-A86DAFEBFAD1}.Release|x64.Build.0 = Release|Any CPU
+		{CBE84ED9-920B-46EC-BAD9-A86DAFEBFAD1}.Release|x86.ActiveCfg = Release|Any CPU
+		{CBE84ED9-920B-46EC-BAD9-A86DAFEBFAD1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

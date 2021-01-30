@@ -1,8 +1,23 @@
-﻿namespace EmuDotNet.Core
+﻿using System;
+
+namespace EmuDotNet.Core
 {
     public class SimpleMemory : IMemory
     {
-        private readonly byte[] _data = new byte[ushort.MaxValue + 1];
+        private const int DataSize = ushort.MaxValue + 1;
+
+        private readonly byte[] _data = new byte[DataSize];
+
+        public byte[] Data => _data;
+
+        public SimpleMemory()
+        {
+        }
+
+        public SimpleMemory(ReadOnlySpan<byte> data)
+        {
+            data.CopyTo(_data);
+        }
 
         public byte GetByte(ushort address)
         {
