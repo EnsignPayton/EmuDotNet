@@ -1,4 +1,5 @@
-﻿using EmuDotNet.Core.Abstractions;
+﻿using System;
+using EmuDotNet.Core.Abstractions;
 
 namespace EmuDotNet.Core.MC6800
 {
@@ -36,18 +37,18 @@ namespace EmuDotNet.Core.MC6800
             return _memory.GetByte(NextImmediate());
         }
 
+        private byte NextIndexed()
+        {
+            var idx = NextImmediate();
+            var address = _registers.IX + idx;
+            return _memory.GetByte((ushort)address);
+        }
+
         private byte NextExtended()
         {
             var low = NextImmediate();
             var high = NextImmediate();
             var address = (high << 8) | low;
-            return _memory.GetByte((ushort) address);
-        }
-
-        private byte NextIndexed()
-        {
-            var idx = NextImmediate();
-            var address = _registers.IX + idx;
             return _memory.GetByte((ushort) address);
         }
 
@@ -59,6 +60,16 @@ namespace EmuDotNet.Core.MC6800
             return _memory.GetByte((ushort) address);
         }
 
+        private byte NextValue(AddressingMode mode) => mode switch
+        {
+            AddressingMode.IMM => NextImmediate(),
+            AddressingMode.DIR => NextDirect(),
+            AddressingMode.IDX => NextIndexed(),
+            AddressingMode.EXT => NextExtended(),
+            AddressingMode.REL => NextRelative(),
+            _ => throw new ArgumentException($"Addressing mode {mode} does not read from memory", nameof(mode))
+        };
+
         private byte Carry()
         {
             return _registers.C ? 1 : 0;
@@ -68,60 +79,57 @@ namespace EmuDotNet.Core.MC6800
         {
             switch (instruction)
             {
+                case Instruction.ADD_A_IMM:
+                case Instruction.ADD_A_DIR:
+                case Instruction.ADD_A_IDX:
+                case Instruction.ADD_A_EXT:
+                case Instruction.ADD_B_IMM:
+                case Instruction.ADD_B_DIR:
+                case Instruction.ADD_B_IDX:
+                case Instruction.ADD_B_EXT:
+                    Add(instruction.GetAccumulator(), instruction.GetMode());
+                    break;
                 case Instruction.ABA:
-                    _registers.A += _registers.B;
+                    AddAccumulators();
                     break;
                 case Instruction.ADC_A_IMM:
-                    _registers.A += (byte) (NextImmediate() + Carry());
-                    break;
                 case Instruction.ADC_A_DIR:
-                    _registers.A += (byte) (NextDirect() + Carry());
-                    break;
                 case Instruction.ADC_A_IDX:
-                    _registers.A += (byte) (NextIndexed() + Carry());
-                    break;
                 case Instruction.ADC_A_EXT:
-                    _registers.A += (byte) (NextExtended() + Carry());
-                    break;
                 case Instruction.ADC_B_IMM:
-                    _registers.B += (byte) (NextImmediate() + Carry());
-                    break;
                 case Instruction.ADC_B_DIR:
-                    _registers.B += (byte) (NextDirect() + Carry());
-                    break;
                 case Instruction.ADC_B_IDX:
-                    _registers.B += (byte) (NextIndexed() + Carry());
-                    break;
                 case Instruction.ADC_B_EXT:
-                    _registers.B += (byte) (NextExtended() + Carry());
-                    break;
-                case Instruction.ADD_A_IMM:
-                    _registers.A += NextImmediate();
-                    break;
-                case Instruction.ADD_A_DIR:
-                    _registers.A += NextDirect();
-                    break;
-                case Instruction.ADD_A_IDX:
-                    _registers.A += NextIndexed();
-                    break;
-                case Instruction.ADD_A_EXT:
-                    _registers.A += NextExtended();
-                    break;
-                case Instruction.ADD_B_IMM:
-                    _registers.B += NextImmediate();
-                    break;
-                case Instruction.ADD_B_DIR:
-                    _registers.B += NextDirect();
-                    break;
-                case Instruction.ADD_B_IDX:
-                    _registers.B += NextIndexed();
-                    break;
-                case Instruction.ADD_B_EXT:
-                    _registers.B += NextExtended();
+                    AddWithCarry(instruction.GetAccumulator(), instruction.GetMode());
                     break;
                 default:
                     return;
             }
+        }
+
+        private void Add(Accumulator reg, AddressingMode mode)
+        {
+            // TODO: Set Flags
+            if (reg == Accumulator.A)
+                _registers.A += NextValue(mode);
+            else
+                _registers.B += NextValue(mode);
+        }
+
+        private void AddAccumulators()
+        {
+            // TODO: Set Flags
+            _registers.A += _registers.B;
+        }
+
+
+        private void AddWithCarry(Accumulator reg, AddressingMode mode)
+        {
+            // TODO: Set Flags
+            if (reg == Accumulator.A)
+                _registers.A += (byte)(NextValue(mode) + Carry());
+            else
+                _registers.B += (byte)(NextValue(mode) + Carry());
         }
     }
 }
