@@ -1,4 +1,5 @@
 ﻿using System;
+using EmuDotNet.Core.Abstractions;
 
 namespace EmuDotNet.Core
 {

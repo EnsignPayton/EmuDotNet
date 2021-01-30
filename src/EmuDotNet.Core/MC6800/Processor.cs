@@ -1,14 +1,16 @@
-﻿namespace EmuDotNet.Core
+﻿using EmuDotNet.Core.Abstractions;
+
+namespace EmuDotNet.Core.MC6800
 {
-    public class MC6800Processor : IProcessor
+    public class Processor : IProcessor
     {
         private readonly IMemory _memory;
-        private readonly MC6800Registers _registers = new();
+        private readonly Registers _registers = new();
 
         // TODO: Remove later maybe
-        public MC6800Registers Registers => _registers;
+        public Registers Registers => _registers;
 
-        public MC6800Processor(
+        public Processor(
             IMemory memory)
         {
             _memory = memory;
@@ -19,9 +21,9 @@
             Execute(NextInstruction());
         }
 
-        private MC6800Instruction NextInstruction()
+        private Instruction NextInstruction()
         {
-            return (MC6800Instruction) NextImmediate();
+            return (Instruction) NextImmediate();
         }
 
         private byte NextImmediate()
@@ -62,59 +64,59 @@
             return _registers.C ? 1 : 0;
         }
 
-        private void Execute(MC6800Instruction instruction)
+        private void Execute(Instruction instruction)
         {
             switch (instruction)
             {
-                case MC6800Instruction.ABA:
+                case Instruction.ABA:
                     _registers.A += _registers.B;
                     break;
-                case MC6800Instruction.ADC_A_IMM:
+                case Instruction.ADC_A_IMM:
                     _registers.A += (byte) (NextImmediate() + Carry());
                     break;
-                case MC6800Instruction.ADC_A_DIR:
+                case Instruction.ADC_A_DIR:
                     _registers.A += (byte) (NextDirect() + Carry());
                     break;
-                case MC6800Instruction.ADC_A_IDX:
+                case Instruction.ADC_A_IDX:
                     _registers.A += (byte) (NextIndexed() + Carry());
                     break;
-                case MC6800Instruction.ADC_A_EXT:
+                case Instruction.ADC_A_EXT:
                     _registers.A += (byte) (NextExtended() + Carry());
                     break;
-                case MC6800Instruction.ADC_B_IMM:
+                case Instruction.ADC_B_IMM:
                     _registers.B += (byte) (NextImmediate() + Carry());
                     break;
-                case MC6800Instruction.ADC_B_DIR:
+                case Instruction.ADC_B_DIR:
                     _registers.B += (byte) (NextDirect() + Carry());
                     break;
-                case MC6800Instruction.ADC_B_IDX:
+                case Instruction.ADC_B_IDX:
                     _registers.B += (byte) (NextIndexed() + Carry());
                     break;
-                case MC6800Instruction.ADC_B_EXT:
+                case Instruction.ADC_B_EXT:
                     _registers.B += (byte) (NextExtended() + Carry());
                     break;
-                case MC6800Instruction.ADD_A_IMM:
+                case Instruction.ADD_A_IMM:
                     _registers.A += NextImmediate();
                     break;
-                case MC6800Instruction.ADD_A_DIR:
+                case Instruction.ADD_A_DIR:
                     _registers.A += NextDirect();
                     break;
-                case MC6800Instruction.ADD_A_IDX:
+                case Instruction.ADD_A_IDX:
                     _registers.A += NextIndexed();
                     break;
-                case MC6800Instruction.ADD_A_EXT:
+                case Instruction.ADD_A_EXT:
                     _registers.A += NextExtended();
                     break;
-                case MC6800Instruction.ADD_B_IMM:
+                case Instruction.ADD_B_IMM:
                     _registers.B += NextImmediate();
                     break;
-                case MC6800Instruction.ADD_B_DIR:
+                case Instruction.ADD_B_DIR:
                     _registers.B += NextDirect();
                     break;
-                case MC6800Instruction.ADD_B_IDX:
+                case Instruction.ADD_B_IDX:
                     _registers.B += NextIndexed();
                     break;
-                case MC6800Instruction.ADD_B_EXT:
+                case Instruction.ADD_B_EXT:
                     _registers.B += NextExtended();
                     break;
                 default:

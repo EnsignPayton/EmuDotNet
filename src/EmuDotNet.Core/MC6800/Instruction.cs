@@ -1,6 +1,6 @@
-﻿namespace EmuDotNet.Core
+﻿namespace EmuDotNet.Core.MC6800
 {
-    public enum MC6800Instruction
+    public enum Instruction
     {
         NOP = 0x01,
         TAP = 0x06,

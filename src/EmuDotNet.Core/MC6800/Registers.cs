@@ -1,6 +1,6 @@
-﻿namespace EmuDotNet.Core
+﻿namespace EmuDotNet.Core.MC6800
 {
-    public class MC6800Registers
+    public class Registers
     {
         /// <summary>
         /// Accumulator A

@@ -1,4 +1,4 @@
-﻿namespace EmuDotNet.Core
+﻿namespace EmuDotNet.Core.Abstractions
 {
     public interface IMemory
     {
