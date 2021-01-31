@@ -183,6 +183,45 @@ namespace EmuDotNet.Core.Test.MC6800
             Assert.False(target.Registers.V);
         }
 
+        [Fact]
+        public void Bit_Sets_Sign_Flag()
+        {
+            var target = GetTestTarget(
+                (byte)Instruction.BIT_A_IMM, 0xAA);
+
+            target.Registers.A = 0xF0;
+            target.ExecuteClock();
+
+            Assert.Equal(0xF0, target.Registers.A);
+            Assert.True(target.Registers.N);
+        }
+
+        [Fact]
+        public void Bit_Sets_Zero_Flag()
+        {
+            var target = GetTestTarget(
+                (byte)Instruction.BIT_A_IMM, 0xAA);
+
+            target.ExecuteClock();
+
+            Assert.Equal(0x00, target.Registers.A);
+            Assert.True(target.Registers.Z);
+        }
+
+        [Fact]
+        public void Bit_Clears_Overflow_Flag()
+        {
+            var target = GetTestTarget(
+                (byte)Instruction.BIT_A_IMM, 0xFF);
+
+            target.Registers.A = 0xFF;
+            target.ExecuteClock();
+
+            Assert.Equal(0xFF, target.Registers.A);
+            Assert.False(target.Registers.V);
+        }
+
+
         private static Processor GetTestTarget(params byte[] data) =>
             new Processor(new SimpleMemory(data));
     }

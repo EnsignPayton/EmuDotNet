@@ -78,6 +78,11 @@ namespace EmuDotNet.Core.MC6800
                 _registers.B = func(_registers.B);
         }
 
+        private byte GetAccumulator(Accumulator reg)
+        {
+            return reg == Accumulator.A ? _registers.A : _registers.B;
+        }
+
         private void Execute(Instruction instruction)
         {
             switch (instruction)
@@ -114,6 +119,16 @@ namespace EmuDotNet.Core.MC6800
                 case Instruction.AND_B_IDX:
                 case Instruction.AND_B_EXT:
                     And(instruction.GetAccumulator(), instruction.GetMode());
+                    break;
+                case Instruction.BIT_A_IMM:
+                case Instruction.BIT_A_DIR:
+                case Instruction.BIT_A_IDX:
+                case Instruction.BIT_A_EXT:
+                case Instruction.BIT_B_IMM:
+                case Instruction.BIT_B_DIR:
+                case Instruction.BIT_B_IDX:
+                case Instruction.BIT_B_EXT:
+                    Bit(instruction.GetAccumulator(), instruction.GetMode());
                     break;
                 default:
                     return;
@@ -164,6 +179,11 @@ namespace EmuDotNet.Core.MC6800
             _registers.N = (and & 0x80) != 0;
             _registers.Z = and == 0;
             return (byte) and;
+        }
+
+        private void Bit(Accumulator reg, AddressingMode mode)
+        {
+            AdcAnd(GetAccumulator(reg), NextValue(mode));
         }
     }
 }
