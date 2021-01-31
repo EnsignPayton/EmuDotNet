@@ -6,7 +6,8 @@ namespace EmuDotNet.Core.MC6800
     public class Processor : IProcessor
     {
         private readonly IMemory _memory;
-        private readonly Registers _registers = new();
+        private readonly Registers _registers;
+        private readonly ALU _alu;
 
         public Registers Registers => _registers;
 
@@ -14,6 +15,8 @@ namespace EmuDotNet.Core.MC6800
             IMemory memory)
         {
             _memory = memory;
+            _registers = new Registers();
+            _alu = new ALU(_registers);
         }
 
         public void ExecuteClock()
@@ -184,122 +187,62 @@ namespace EmuDotNet.Core.MC6800
 
         private void Add(Accumulator reg, AddressingMode mode)
         {
-            OperateOn(reg, x => AdcAdd(x, NextValue(mode)));
+            OperateOn(reg, x => _alu.Add(x, NextValue(mode)));
         }
 
         private void AddAccumulators()
         {
-            OperateOn(Accumulator.A, x => AdcAdd(x, _registers.B));
+            OperateOn(Accumulator.A, x => _alu.Add(x, _registers.B));
         }
 
         private void AddWithCarry(Accumulator reg, AddressingMode mode)
         {
-            OperateOn(reg, x => AdcAdd(x, NextValue(mode), true));
-        }
-
-        private byte AdcAdd(byte val1, byte val2, bool useCarry = false)
-        {
-            var carry = useCarry && _registers.C ? 1 : 0;
-
-            var low1 = val1 & 0xF;
-            var low2 = val2 & 0xF;
-            var lowSum = low1 + low2 + carry;
-            _registers.H = (lowSum & 0x10) != 0;
-
-            var sum = val1 + val2 + carry;
-            _registers.N = (sum & 0x80) != 0;
-            _registers.Z = sum == 0;
-            _registers.V = (val1 & 0x80) == 0 && (val2 & 0x80) == 0 && (sum & 0x80) != 0 ||
-                           (val1 & 0x80) != 0 && (val2 & 0x80) != 0 && (sum & 0x80) == 0;
-            _registers.C = (sum & 0x100) != 0;
-            return (byte)sum;
+            OperateOn(reg, x => _alu.Add(x, NextValue(mode), true));
         }
 
         private void And(Accumulator reg, AddressingMode mode)
         {
-            OperateOn(reg, x => AdcAnd(x, NextValue(mode)));
-        }
-
-        private byte AdcAnd(byte val1, byte val2)
-        {
-            var and = val1 & val2;
-            _registers.N = (and & 0x80) != 0;
-            _registers.Z = and == 0;
-            return (byte) and;
+            OperateOn(reg, x => _alu.And(x, NextValue(mode)));
         }
 
         private void Bit(Accumulator reg, AddressingMode mode)
         {
-            AdcAnd(GetAccumulator(reg), NextValue(mode));
+            _alu.And(GetAccumulator(reg), NextValue(mode));
         }
 
         private void ClearAccumulator(Accumulator reg)
         {
-            _registers.N = false;
-            _registers.Z = true;
-            _registers.C = false;
-            _registers.V = false;
-            OperateOn(reg, _ => 0);
+            OperateOn(reg, _ => _alu.Clear());
         }
 
         private void ClearMemory(AddressingMode mode)
         {
-            _registers.N = false;
-            _registers.Z = true;
-            _registers.C = false;
-            _registers.V = false;
             var address = NextAddress(mode);
-            _memory.SetByte(address, 0);
+            _memory.SetByte(address, _alu.Clear());
         }
 
         private void ComplementAccumulator(Accumulator reg)
         {
-            OperateOn(reg, x =>
-            {
-                var result = (byte) (x ^ 0xFF);
-                _registers.N = (result & 0x80) != 0;
-                _registers.Z = result == 0;
-                _registers.V = false;
-                _registers.C = true;
-                return result;
-            });
+            OperateOn(reg, _alu.Complement);
         }
 
         private void ComplementMemory(AddressingMode mode)
         {
             var address = NextAddress(mode);
             var value = _memory.GetByte(address);
-            var result = (byte) (value ^ 0xFF);
-            _registers.N = (result & 0x80) != 0;
-            _registers.Z = result == 0;
-            _registers.V = false;
-            _registers.C = true;
-            _memory.SetByte(address, result);
+            _memory.SetByte(address, _alu.Complement(value));
         }
 
         private void NegateAccumulator(Accumulator reg)
         {
-            OperateOn(reg, x =>
-            {
-                var result = (byte) ((byte) (x ^ 0xFF) + 1);
-                _registers.N = (result & 0x80) != 0;
-                _registers.Z = result == 0;
-                _registers.V = result == 0x80;
-                _registers.C = result == 0;
-                return result;
-            });
+            OperateOn(reg, _alu.Negate);
         }
 
         private void NegateMemory(AddressingMode mode)
         {
             var address = NextAddress(mode);
             var value = _memory.GetByte(address);
-            var result = (byte) ((byte) (value ^ 0xFF) + 1);
-            _registers.N = (result & 0x80) != 0;
-            _registers.Z = result == 0;
-            _registers.V = result == 0x80;
-            _registers.C = result == 0;
-            _memory.SetByte(address, result);
+            _memory.SetByte(address, _alu.Negate(value));
         }
     }
 }
