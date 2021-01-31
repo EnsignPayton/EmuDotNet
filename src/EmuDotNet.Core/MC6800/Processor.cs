@@ -8,7 +8,6 @@ namespace EmuDotNet.Core.MC6800
         private readonly IMemory _memory;
         private readonly Registers _registers = new();
 
-        // TODO: Remove later maybe
         public Registers Registers => _registers;
 
         public Processor(
