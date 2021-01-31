@@ -1,4 +1,5 @@
-﻿using EmuDotNet.Core.MC6800;
+﻿using EmuDotNet.Core.Abstractions;
+using EmuDotNet.Core.MC6800;
 using Xunit;
 
 namespace EmuDotNet.Core.Test.MC6800
@@ -13,8 +14,7 @@ namespace EmuDotNet.Core.Test.MC6800
                 (byte) Instruction.ADD_A_IMM, 0x01,
                 (byte) Instruction.ABA);
 
-            target.ExecuteClock();
-            target.ExecuteClock();
+            target.ExecuteClock(2);
 
             Assert.Equal(0x10, target.Registers.A);
             Assert.True(target.Registers.H);
@@ -51,8 +51,7 @@ namespace EmuDotNet.Core.Test.MC6800
                 (byte) Instruction.ADD_A_IMM, 0x7F,
                 (byte) Instruction.ADD_A_IMM, 0x01);
 
-            target.ExecuteClock();
-            target.ExecuteClock();
+            target.ExecuteClock(2);
 
             Assert.Equal(0x80, target.Registers.A);
             Assert.True(target.Registers.V);
@@ -65,8 +64,7 @@ namespace EmuDotNet.Core.Test.MC6800
                 (byte) Instruction.ADD_A_IMM, 0x80,
                 (byte) Instruction.ADD_A_IMM, 0x80);
 
-            target.ExecuteClock();
-            target.ExecuteClock();
+            target.ExecuteClock(2);
 
             Assert.Equal(0x00, target.Registers.A);
             Assert.True(target.Registers.C);
@@ -80,9 +78,7 @@ namespace EmuDotNet.Core.Test.MC6800
                 (byte) Instruction.ADD_A_IMM, 0x80,
                 (byte) Instruction.ADC_A_IMM, 0x01);
 
-            target.ExecuteClock();
-            target.ExecuteClock();
-            target.ExecuteClock();
+            target.ExecuteClock(3);
 
             Assert.Equal(0x02, target.Registers.A);
         }
@@ -90,7 +86,8 @@ namespace EmuDotNet.Core.Test.MC6800
         [Fact]
         public void Add_Accumulators_Works()
         {
-            var target = GetTestTarget((byte) Instruction.ABA);
+            var target = GetTestTarget(
+                (byte) Instruction.ABA);
 
             target.Registers.A = 0x0F;
             target.Registers.B = 0x01;
@@ -114,7 +111,7 @@ namespace EmuDotNet.Core.Test.MC6800
         public void Add_Extended_Loads_Data()
         {
             var target = GetTestTarget(
-                (byte)Instruction.ADD_A_EXT, 0x00, 0x04, 0x00, 0x69);
+                (byte) Instruction.ADD_A_EXT, 0x00, 0x04, 0x00, 0x69);
 
             target.ExecuteClock();
 
@@ -149,7 +146,7 @@ namespace EmuDotNet.Core.Test.MC6800
         public void And_Sets_Sign_Flag()
         {
             var target = GetTestTarget(
-                (byte)Instruction.AND_A_IMM, 0xAA);
+                (byte) Instruction.AND_A_IMM, 0xAA);
 
             target.Registers.A = 0xF0;
             target.ExecuteClock();
@@ -162,7 +159,7 @@ namespace EmuDotNet.Core.Test.MC6800
         public void And_Sets_Zero_Flag()
         {
             var target = GetTestTarget(
-                (byte)Instruction.AND_A_IMM, 0xAA);
+                (byte) Instruction.AND_A_IMM, 0xAA);
 
             target.ExecuteClock();
 
@@ -174,7 +171,7 @@ namespace EmuDotNet.Core.Test.MC6800
         public void And_Clears_Overflow_Flag()
         {
             var target = GetTestTarget(
-                (byte)Instruction.AND_A_IMM, 0xFF);
+                (byte) Instruction.AND_A_IMM, 0xFF);
 
             target.Registers.A = 0xFF;
             target.ExecuteClock();
@@ -187,7 +184,7 @@ namespace EmuDotNet.Core.Test.MC6800
         public void Bit_Sets_Sign_Flag()
         {
             var target = GetTestTarget(
-                (byte)Instruction.BIT_A_IMM, 0xAA);
+                (byte) Instruction.BIT_A_IMM, 0xAA);
 
             target.Registers.A = 0xF0;
             target.ExecuteClock();
@@ -200,7 +197,7 @@ namespace EmuDotNet.Core.Test.MC6800
         public void Bit_Sets_Zero_Flag()
         {
             var target = GetTestTarget(
-                (byte)Instruction.BIT_A_IMM, 0xAA);
+                (byte) Instruction.BIT_A_IMM, 0xAA);
 
             target.ExecuteClock();
 
@@ -212,7 +209,7 @@ namespace EmuDotNet.Core.Test.MC6800
         public void Bit_Clears_Overflow_Flag()
         {
             var target = GetTestTarget(
-                (byte)Instruction.BIT_A_IMM, 0xFF);
+                (byte) Instruction.BIT_A_IMM, 0xFF);
 
             target.Registers.A = 0xFF;
             target.ExecuteClock();
@@ -221,8 +218,121 @@ namespace EmuDotNet.Core.Test.MC6800
             Assert.False(target.Registers.V);
         }
 
+        [Fact]
+        public void Clear_Clears_Accumulator()
+        {
+            var target = GetTestTarget(
+                (byte) Instruction.CLR_A);
 
-        private static Processor GetTestTarget(params byte[] data) =>
-            new Processor(new SimpleMemory(data));
+            target.Registers.A = 0x69;
+            target.ExecuteClock();
+
+            Assert.Equal(0x00, target.Registers.A);
+        }
+
+        [Fact]
+        public void Clear_Clears_Indexed()
+        {
+            var target = GetTestTarget(
+                (byte) Instruction.CLR_IDX, 0x00);
+
+            target.ExecuteClock();
+
+            Assert.Equal(0, target.Data[0]);
+        }
+
+        [Fact]
+        public void Clear_Clears_Extended()
+        {
+            var target = GetTestTarget(
+                (byte) Instruction.CLR_EXT, 0x00, 0x00);
+
+            target.ExecuteClock();
+
+            Assert.Equal(0, target.Data[0]);
+        }
+
+        [Fact]
+        public void Clear_Clears_Sign_Flag()
+        {
+            var target = GetTestTarget(
+                (byte)Instruction.CLR_A);
+
+            target.Registers.N = true;
+            target.ExecuteClock();
+
+            Assert.Equal(0x00, target.Registers.A);
+            Assert.False(target.Registers.N);
+        }
+
+        [Fact]
+        public void Clear_Sets_Zero_Flag()
+        {
+            var target = GetTestTarget(
+                (byte)Instruction.CLR_A);
+
+            target.Registers.Z = false;
+            target.ExecuteClock();
+
+            Assert.Equal(0x00, target.Registers.A);
+            Assert.True(target.Registers.Z);
+        }
+
+        [Fact]
+        public void Clear_Clears_Carry_Flag()
+        {
+            var target = GetTestTarget(
+                (byte)Instruction.CLR_A);
+
+            target.Registers.C = true;
+            target.ExecuteClock();
+
+            Assert.Equal(0x00, target.Registers.A);
+            Assert.False(target.Registers.C);
+        }
+
+        [Fact]
+        public void Clear_Clears_Overflow_Flag()
+        {
+            var target = GetTestTarget(
+                (byte)Instruction.CLR_A);
+
+            target.Registers.V = true;
+            target.ExecuteClock();
+
+            Assert.Equal(0x00, target.Registers.A);
+            Assert.False(target.Registers.V);
+        }
+
+        private static ProcessorFacade GetTestTarget(params byte[] data) =>
+            new(data);
+
+        private class ProcessorFacade : IProcessor
+        {
+            private readonly Processor _processor;
+            private readonly SimpleMemory _memory;
+
+            public Registers Registers => _processor.Registers;
+            public byte[] Data => _memory.Data;
+
+            public ProcessorFacade(params byte[] data)
+            {
+                _memory = new SimpleMemory(data);
+                _processor = new Processor(_memory);
+            }
+
+            public void ExecuteClock()
+            {
+                _processor.ExecuteClock();
+            }
+
+            public void ExecuteClock(int cycles)
+            {
+                for (int i = 0; i < cycles; i++)
+                {
+                    _processor.ExecuteClock();
+                }
+            }
+        }
     }
 }

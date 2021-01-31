@@ -32,24 +32,39 @@ namespace EmuDotNet.Core.MC6800
             return _memory.GetByte(_registers.PC++);
         }
 
+        private ushort DirectAddress()
+        {
+            return NextImmediate();
+        }
+
         private byte NextDirect()
         {
             return _memory.GetByte(NextImmediate());
         }
 
-        private byte NextIndexed()
+        private ushort IndexedAddress()
         {
             var idx = NextImmediate();
             var address = _registers.IX + idx;
-            return _memory.GetByte((ushort)address);
+            return (ushort) address;
         }
 
-        private byte NextExtended()
+        private byte NextIndexed()
+        {
+            return _memory.GetByte(IndexedAddress());
+        }
+
+        private ushort ExtendedAddress()
         {
             var high = NextImmediate();
             var low = NextImmediate();
             var address = (high << 8) | low;
-            return _memory.GetByte((ushort) address);
+            return (ushort) address;
+        }
+
+        private byte NextExtended()
+        {
+            return _memory.GetByte(ExtendedAddress());
         }
 
         private byte NextRelative()
@@ -67,6 +82,14 @@ namespace EmuDotNet.Core.MC6800
             AddressingMode.IDX => NextIndexed(),
             AddressingMode.EXT => NextExtended(),
             AddressingMode.REL => NextRelative(),
+            _ => throw new ArgumentException($"Addressing mode {mode} does not read from memory", nameof(mode))
+        };
+
+        private ushort NextAddress(AddressingMode mode) => mode switch
+        {
+            AddressingMode.DIR => DirectAddress(),
+            AddressingMode.IDX => IndexedAddress(),
+            AddressingMode.EXT => ExtendedAddress(),
             _ => throw new ArgumentException($"Addressing mode {mode} does not read from memory", nameof(mode))
         };
 
@@ -130,6 +153,14 @@ namespace EmuDotNet.Core.MC6800
                 case Instruction.BIT_B_EXT:
                     Bit(instruction.GetAccumulator(), instruction.GetMode());
                     break;
+                case Instruction.CLR_A:
+                case Instruction.CLR_B:
+                    ClearAccumulator(instruction.GetAccumulator());
+                    break;
+                case Instruction.CLR_IDX:
+                case Instruction.CLR_EXT:
+                    ClearMemory(instruction.GetMode());
+                    break;
                 default:
                     return;
             }
@@ -184,6 +215,25 @@ namespace EmuDotNet.Core.MC6800
         private void Bit(Accumulator reg, AddressingMode mode)
         {
             AdcAnd(GetAccumulator(reg), NextValue(mode));
+        }
+
+        private void ClearAccumulator(Accumulator reg)
+        {
+            _registers.N = false;
+            _registers.Z = true;
+            _registers.C = false;
+            _registers.V = false;
+            OperateOn(reg, _ => 0);
+        }
+
+        private void ClearMemory(AddressingMode mode)
+        {
+            _registers.N = false;
+            _registers.Z = true;
+            _registers.C = false;
+            _registers.V = false;
+            var address = NextAddress(mode);
+            _memory.SetByte(address, 0);
         }
     }
 }
