@@ -75,6 +75,19 @@ namespace EmuDotNet.Core.MC6800
             return _registers.C ? 1 : 0;
         }
 
+        private void OperateOn(Accumulator reg, Func<byte, byte> func)
+        {
+            if (reg == Accumulator.A)
+                _registers.A = func(_registers.A);
+            else
+                _registers.B = func(_registers.B);
+        }
+
+        private void OperateOn(Accumulator reg, Func<byte, int> func)
+        {
+            OperateOn(reg, x => (byte) func(x));
+        }
+
         private void Execute(Instruction instruction)
         {
             switch (instruction)
@@ -107,29 +120,33 @@ namespace EmuDotNet.Core.MC6800
             }
         }
 
+        private byte AdcAdd(byte val1, byte val2)
+        {
+            var low1 = val1 & 0xF;
+            var low2 = val2 & 0xF;
+            var lowSum = low1 + low2;
+            _registers.H = (lowSum & 0x10) != 0;
+
+            // TODO: N, Z, V
+
+            var sum = val1 + val2;
+            _registers.C = (sum & 0x100) != 0;
+            return (byte) sum;
+        }
+
         private void Add(Accumulator reg, AddressingMode mode)
         {
-            // TODO: Set Flags
-            if (reg == Accumulator.A)
-                _registers.A += NextValue(mode);
-            else
-                _registers.B += NextValue(mode);
+            OperateOn(reg, x => AdcAdd(x, NextValue(mode)));
         }
 
         private void AddAccumulators()
         {
-            // TODO: Set Flags
-            _registers.A += _registers.B;
+            _registers.A = AdcAdd(_registers.A, _registers.B);
         }
-
 
         private void AddWithCarry(Accumulator reg, AddressingMode mode)
         {
-            // TODO: Set Flags
-            if (reg == Accumulator.A)
-                _registers.A += (byte)(NextValue(mode) + Carry());
-            else
-                _registers.B += (byte)(NextValue(mode) + Carry());
+            OperateOn(reg, x => x + NextValue(mode) + Carry());
         }
     }
 }
