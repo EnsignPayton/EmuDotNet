@@ -160,6 +160,7 @@ namespace EmuDotNet.Core.MC6800
                 case Instruction.CLR_EXT:
                     ClearMemory(instruction.GetMode());
                     break;
+                // TODO: Come back to cmp, it's a flag set sub
                 default:
                     return;
             }
