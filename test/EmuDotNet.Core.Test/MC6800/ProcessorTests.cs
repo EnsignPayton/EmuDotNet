@@ -12,44 +12,72 @@ namespace EmuDotNet.Core.Test.MC6800
         public void Add_Sets_Half_Carry()
         {
             var target = GetTestTarget(
-                (byte) Instruction.ADD_A_IMM, 0x39,
-                (byte) Instruction.ADD_B_IMM, 0x48,
+                (byte) Instruction.ADD_A_IMM, 0x0F,
+                (byte) Instruction.ADD_A_IMM, 0x01,
                 (byte) Instruction.ABA);
 
             target.ExecuteClock();
             target.ExecuteClock();
-            target.ExecuteClock();
 
-            Assert.Equal(0x81, target.Registers.A);
+            Assert.Equal(0x10, target.Registers.A);
             Assert.True(target.Registers.H);
         }
 
         [Fact]
-        public void ABA_Zeros()
+        public void Add_Sets_Sign_Flag()
         {
-            var target = GetTestTarget((byte) Instruction.ABA);
+            var target = GetTestTarget(
+                (byte) Instruction.ADD_A_IMM, 0xFF);
 
             target.ExecuteClock();
 
-            Assert.Equal(0, target.Registers.A);
+            Assert.Equal(0xFF, target.Registers.A);
+            Assert.True(target.Registers.N);
         }
 
         [Fact]
-        public void ADD_A_IMM_Loads()
+        public void Add_Sets_Zero_Flag()
         {
-            var target = GetTestTarget((byte) Instruction.ADD_A_IMM, 0x69);
+            var target = GetTestTarget(
+                (byte) Instruction.ADD_A_IMM, 0x00);
 
             target.ExecuteClock();
 
-            Assert.Equal(0x69, target.Registers.A);
+            Assert.Equal(0x00, target.Registers.A);
+            Assert.True(target.Registers.Z);
+        }
+
+        [Fact]
+        public void Add_Sets_Overflow_Flag()
+        {
+            var target = GetTestTarget(
+                (byte) Instruction.ADD_A_IMM, 0x7F,
+                (byte) Instruction.ADD_A_IMM, 0x01);
+
+            target.ExecuteClock();
+            target.ExecuteClock();
+
+            Assert.Equal(0x80, target.Registers.A);
+            Assert.True(target.Registers.V);
+        }
+
+        [Fact]
+        public void Add_Sets_Carry_Flag()
+        {
+            var target = GetTestTarget(
+                (byte) Instruction.ADD_A_IMM, 0x80,
+                (byte) Instruction.ADD_A_IMM, 0x80);
+
+            target.ExecuteClock();
+            target.ExecuteClock();
+
+            Assert.Equal(0x00, target.Registers.A);
+            Assert.True(target.Registers.C);
         }
 
         #endregion
 
         private static Processor GetTestTarget(params byte[] data) =>
-            GetTestTarget(data.AsSpan());
-
-        private static Processor GetTestTarget(ReadOnlySpan<byte> data) =>
             new Processor(new SimpleMemory(data));
     }
 }

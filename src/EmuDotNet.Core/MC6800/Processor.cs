@@ -127,9 +127,11 @@ namespace EmuDotNet.Core.MC6800
             var lowSum = low1 + low2;
             _registers.H = (lowSum & 0x10) != 0;
 
-            // TODO: N, Z, V
-
             var sum = val1 + val2;
+            _registers.N = (sum & 0x80) != 0;
+            _registers.Z = sum == 0;
+            _registers.V = (val1 & 0x80) == 0 && (val2 & 0x80) == 0 && (sum & 0x80) != 0 ||
+                           (val1 & 0x80) != 0 && (val2 & 0x80) != 0 && (sum & 0x80) == 0;
             _registers.C = (sum & 0x100) != 0;
             return (byte) sum;
         }
