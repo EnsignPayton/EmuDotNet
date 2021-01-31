@@ -256,7 +256,7 @@ namespace EmuDotNet.Core.Test.MC6800
         public void Clear_Clears_Sign_Flag()
         {
             var target = GetTestTarget(
-                (byte)Instruction.CLR_A);
+                (byte) Instruction.CLR_A);
 
             target.Registers.N = true;
             target.ExecuteClock();
@@ -269,7 +269,7 @@ namespace EmuDotNet.Core.Test.MC6800
         public void Clear_Sets_Zero_Flag()
         {
             var target = GetTestTarget(
-                (byte)Instruction.CLR_A);
+                (byte) Instruction.CLR_A);
 
             target.Registers.Z = false;
             target.ExecuteClock();
@@ -282,7 +282,7 @@ namespace EmuDotNet.Core.Test.MC6800
         public void Clear_Clears_Carry_Flag()
         {
             var target = GetTestTarget(
-                (byte)Instruction.CLR_A);
+                (byte) Instruction.CLR_A);
 
             target.Registers.C = true;
             target.ExecuteClock();
@@ -295,13 +295,181 @@ namespace EmuDotNet.Core.Test.MC6800
         public void Clear_Clears_Overflow_Flag()
         {
             var target = GetTestTarget(
-                (byte)Instruction.CLR_A);
+                (byte) Instruction.CLR_A);
 
             target.Registers.V = true;
             target.ExecuteClock();
 
             Assert.Equal(0x00, target.Registers.A);
             Assert.False(target.Registers.V);
+        }
+
+        [Fact]
+        public void Complement_Inverts_Accumulator()
+        {
+            var target = GetTestTarget(
+                (byte) Instruction.COM_A);
+
+            target.Registers.A = 0xAA;
+            target.ExecuteClock();
+
+            Assert.Equal(0x55, target.Registers.A);
+        }
+
+        [Fact]
+        public void Complement_Inverts_Indexed()
+        {
+            var target = GetTestTarget(
+                (byte) Instruction.COM_IDX, 0x02, 0xAA);
+
+            target.ExecuteClock();
+
+            Assert.Equal(0x55, target.Data[2]);
+        }
+
+        [Fact]
+        public void Complement_Inverts_Extended()
+        {
+            var target = GetTestTarget(
+                (byte) Instruction.COM_EXT, 0x00, 0x03, 0xAA);
+
+            target.ExecuteClock();
+
+            Assert.Equal(0x55, target.Data[3]);
+        }
+
+        [Fact]
+        public void Complement_Sets_Sign_Flag()
+        {
+            var target = GetTestTarget(
+                (byte) Instruction.COM_A);
+
+            target.ExecuteClock();
+
+            Assert.Equal(0xFF, target.Registers.A);
+            Assert.True(target.Registers.N);
+        }
+
+        [Fact]
+        public void Complement_Sets_Zero_Flag()
+        {
+            var target = GetTestTarget(
+                (byte) Instruction.COM_A);
+
+            target.Registers.A = 0xFF;
+            target.ExecuteClock();
+
+            Assert.Equal(0x00, target.Registers.A);
+            Assert.True(target.Registers.Z);
+        }
+
+        [Fact]
+        public void Complement_Clears_Overflow_Flag()
+        {
+            var target = GetTestTarget(
+                (byte) Instruction.COM_A);
+
+            target.Registers.V = true;
+            target.ExecuteClock();
+
+            Assert.Equal(0xFF, target.Registers.A);
+            Assert.False(target.Registers.V);
+        }
+
+        [Fact]
+        public void Complement_Sets_Carry_Flag()
+        {
+            var target = GetTestTarget(
+                (byte) Instruction.COM_A);
+
+            target.ExecuteClock();
+
+            Assert.Equal(0xFF, target.Registers.A);
+            Assert.True(target.Registers.C);
+        }
+
+        [Fact]
+        public void Negate_Inverts_Accumulator()
+        {
+            var target = GetTestTarget(
+                (byte) Instruction.NEG_A);
+
+            target.Registers.A = 0xAA;
+            target.ExecuteClock();
+
+            Assert.Equal(0x56, target.Registers.A);
+        }
+
+        [Fact]
+        public void Negate_Inverts_Indexed()
+        {
+            var target = GetTestTarget(
+                (byte) Instruction.NEG_IDX, 0x02, 0xAA);
+
+            target.ExecuteClock();
+
+            Assert.Equal(0x56, target.Data[2]);
+        }
+
+        [Fact]
+        public void Negate_Inverts_Extended()
+        {
+            var target = GetTestTarget(
+                (byte) Instruction.NEG_EXT, 0x00, 0x03, 0xAA);
+
+            target.ExecuteClock();
+
+            Assert.Equal(0x56, target.Data[3]);
+        }
+
+        [Fact]
+        public void Negate_Sets_Sign_Flag()
+        {
+            var target = GetTestTarget(
+                (byte) Instruction.NEG_A);
+
+            target.Registers.A = 0x7F;
+            target.ExecuteClock();
+
+            Assert.Equal(0x81, target.Registers.A);
+            Assert.True(target.Registers.N);
+        }
+
+        [Fact]
+        public void Negate_Sets_Zero_Flag()
+        {
+            var target = GetTestTarget(
+                (byte) Instruction.NEG_A);
+
+            target.ExecuteClock();
+
+            Assert.Equal(0x00, target.Registers.A);
+            Assert.True(target.Registers.Z);
+        }
+
+        [Fact]
+        public void Negate_Sets_Overflow_Flag()
+        {
+            var target = GetTestTarget(
+                (byte) Instruction.NEG_A);
+
+            target.Registers.A = 0x80;
+            target.ExecuteClock();
+
+            Assert.Equal(0x80, target.Registers.A);
+            Assert.True(target.Registers.V);
+        }
+
+        [Fact]
+        public void Negate_Sets_Carry_Flag()
+        {
+            var target = GetTestTarget(
+                (byte) Instruction.NEG_A);
+
+            target.ExecuteClock();
+
+            Assert.Equal(0x00, target.Registers.A);
+            Assert.True(target.Registers.C);
         }
 
         private static ProcessorFacade GetTestTarget(params byte[] data) =>

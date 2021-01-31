@@ -161,6 +161,22 @@ namespace EmuDotNet.Core.MC6800
                     ClearMemory(instruction.GetMode());
                     break;
                 // TODO: Come back to cmp, it's a flag set sub
+                case Instruction.COM_A:
+                case Instruction.COM_B:
+                    ComplementAccumulator(instruction.GetAccumulator());
+                    break;
+                case Instruction.COM_IDX:
+                case Instruction.COM_EXT:
+                    ComplementMemory(instruction.GetMode());
+                    break;
+                case Instruction.NEG_A:
+                case Instruction.NEG_B:
+                    NegateAccumulator(instruction.GetAccumulator());
+                    break;
+                case Instruction.NEG_IDX:
+                case Instruction.NEG_EXT:
+                    NegateMemory(instruction.GetMode());
+                    break;
                 default:
                     return;
             }
@@ -234,6 +250,56 @@ namespace EmuDotNet.Core.MC6800
             _registers.V = false;
             var address = NextAddress(mode);
             _memory.SetByte(address, 0);
+        }
+
+        private void ComplementAccumulator(Accumulator reg)
+        {
+            OperateOn(reg, x =>
+            {
+                var result = (byte) (x ^ 0xFF);
+                _registers.N = (result & 0x80) != 0;
+                _registers.Z = result == 0;
+                _registers.V = false;
+                _registers.C = true;
+                return result;
+            });
+        }
+
+        private void ComplementMemory(AddressingMode mode)
+        {
+            var address = NextAddress(mode);
+            var value = _memory.GetByte(address);
+            var result = (byte) (value ^ 0xFF);
+            _registers.N = (result & 0x80) != 0;
+            _registers.Z = result == 0;
+            _registers.V = false;
+            _registers.C = true;
+            _memory.SetByte(address, result);
+        }
+
+        private void NegateAccumulator(Accumulator reg)
+        {
+            OperateOn(reg, x =>
+            {
+                var result = (byte) ((byte) (x ^ 0xFF) + 1);
+                _registers.N = (result & 0x80) != 0;
+                _registers.Z = result == 0;
+                _registers.V = result == 0x80;
+                _registers.C = result == 0;
+                return result;
+            });
+        }
+
+        private void NegateMemory(AddressingMode mode)
+        {
+            var address = NextAddress(mode);
+            var value = _memory.GetByte(address);
+            var result = (byte) ((byte) (value ^ 0xFF) + 1);
+            _registers.N = (result & 0x80) != 0;
+            _registers.Z = result == 0;
+            _registers.V = result == 0x80;
+            _registers.C = result == 0;
+            _memory.SetByte(address, result);
         }
     }
 }
