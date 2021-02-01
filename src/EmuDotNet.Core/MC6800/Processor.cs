@@ -123,6 +123,24 @@ namespace EmuDotNet.Core.MC6800
                 case Instruction.DEX:
                     _registers.IX--;
                     break;
+                case Instruction.CLV:
+                    _registers.V = false;
+                    break;
+                case Instruction.SEV:
+                    _registers.V = true;
+                    break;
+                case Instruction.CLC:
+                    _registers.C = false;
+                    break;
+                case Instruction.SEC:
+                    _registers.C = true;
+                    break;
+                case Instruction.CLI:
+                    _registers.I = false;
+                    break;
+                case Instruction.SEI:
+                    _registers.I = true;
+                    break;
                 // Old organization below
                 case Instruction.ADD_A_IMM:
                 case Instruction.ADD_A_DIR:

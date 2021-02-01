@@ -9,7 +9,7 @@ namespace EmuDotNet.Core.Test.MC6800
         [Fact]
         public void NOP_Only_Increments_Program_Counter()
         {
-            var target = GetTestTarget((byte) Instruction.NOP);
+            var target = GetTestTarget(Instruction.NOP);
 
             target.ExecuteClock();
 
@@ -31,7 +31,7 @@ namespace EmuDotNet.Core.Test.MC6800
         [Fact]
         public void INX_Increments_Index_Register()
         {
-            var target = GetTestTarget((byte) Instruction.INX);
+            var target = GetTestTarget(Instruction.INX);
 
             target.ExecuteClock();
 
@@ -41,11 +41,77 @@ namespace EmuDotNet.Core.Test.MC6800
         [Fact]
         public void DEX_Decrements_Index_Register()
         {
-            var target = GetTestTarget((byte) Instruction.DEX);
+            var target = GetTestTarget(Instruction.DEX);
 
             target.ExecuteClock();
 
             Assert.Equal(0xFFFF, target.Registers.IX);
+        }
+
+        [Fact]
+        public void CLV_Clears_Overflow_Flag()
+        {
+            var target = GetTestTarget(Instruction.CLV);
+
+            target.Registers.V = true;
+            target.ExecuteClock();
+
+            Assert.False(target.Registers.V);
+        }
+
+        [Fact]
+        public void SEV_Sets_Overflow_Flag()
+        {
+            var target = GetTestTarget(Instruction.SEV);
+
+            target.Registers.V = false;
+            target.ExecuteClock();
+
+            Assert.True(target.Registers.V);
+        }
+
+        [Fact]
+        public void CLC_Clears_Overflow_Flag()
+        {
+            var target = GetTestTarget(Instruction.CLC);
+
+            target.Registers.C = true;
+            target.ExecuteClock();
+
+            Assert.False(target.Registers.C);
+        }
+
+        [Fact]
+        public void SEC_Sets_Overflow_Flag()
+        {
+            var target = GetTestTarget(Instruction.SEC);
+
+            target.Registers.C = false;
+            target.ExecuteClock();
+
+            Assert.True(target.Registers.C);
+        }
+
+        [Fact]
+        public void CLI_Clears_Overflow_Flag()
+        {
+            var target = GetTestTarget(Instruction.CLI);
+
+            target.Registers.I = true;
+            target.ExecuteClock();
+
+            Assert.False(target.Registers.I);
+        }
+
+        [Fact]
+        public void SEI_Sets_Overflow_Flag()
+        {
+            var target = GetTestTarget(Instruction.SEI);
+
+            target.Registers.I = false;
+            target.ExecuteClock();
+
+            Assert.True(target.Registers.I);
         }
 
         // Old tests below
@@ -515,6 +581,9 @@ namespace EmuDotNet.Core.Test.MC6800
             Assert.Equal(0x00, target.Registers.A);
             Assert.True(target.Registers.C);
         }
+
+        private static ProcessorFacade GetTestTarget(Instruction instruction) =>
+            new((byte) instruction);
 
         private static ProcessorFacade GetTestTarget(params byte[] data) =>
             new(data);
