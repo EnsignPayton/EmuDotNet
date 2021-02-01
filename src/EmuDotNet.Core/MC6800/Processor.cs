@@ -112,6 +112,18 @@ namespace EmuDotNet.Core.MC6800
         {
             switch (instruction)
             {
+                case Instruction.NOP:
+                    break;
+                case Instruction.TAP:
+                case Instruction.TPA:
+                    break;
+                case Instruction.INX:
+                    _registers.IX++;
+                    break;
+                case Instruction.DEX:
+                    _registers.IX--;
+                    break;
+                // Old organization below
                 case Instruction.ADD_A_IMM:
                 case Instruction.ADD_A_DIR:
                 case Instruction.ADD_A_IDX:

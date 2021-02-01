@@ -7,6 +7,50 @@ namespace EmuDotNet.Core.Test.MC6800
     public class ProcessorTests
     {
         [Fact]
+        public void NOP_Only_Increments_Program_Counter()
+        {
+            var target = GetTestTarget((byte) Instruction.NOP);
+
+            target.ExecuteClock();
+
+            Assert.Equal(0x00, target.Registers.A);
+            Assert.Equal(0x00, target.Registers.B);
+            Assert.Equal(0x0000, target.Registers.IX);
+            Assert.Equal(0x0000, target.Registers.SP);
+            Assert.Equal(0x0001, target.Registers.PC);
+            Assert.False(target.Registers.H);
+            Assert.False(target.Registers.I);
+            Assert.False(target.Registers.N);
+            Assert.False(target.Registers.Z);
+            Assert.False(target.Registers.V);
+            Assert.False(target.Registers.C);
+        }
+
+        // TODO: Find definition for TAP and TPA
+
+        [Fact]
+        public void INX_Increments_Index_Register()
+        {
+            var target = GetTestTarget((byte) Instruction.INX);
+
+            target.ExecuteClock();
+
+            Assert.Equal(0x0001, target.Registers.IX);
+        }
+
+        [Fact]
+        public void DEX_Decrements_Index_Register()
+        {
+            var target = GetTestTarget((byte) Instruction.DEX);
+
+            target.ExecuteClock();
+
+            Assert.Equal(0xFFFF, target.Registers.IX);
+        }
+
+        // Old tests below
+
+        [Fact]
         public void Add_Sets_Half_Carry()
         {
             var target = GetTestTarget(
