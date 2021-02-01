@@ -1,4 +1,5 @@
-﻿using EmuDotNet.Core.Abstractions;
+﻿using System;
+using EmuDotNet.Core.Abstractions;
 using EmuDotNet.Core.MC6800;
 using Xunit;
 
@@ -112,6 +113,55 @@ namespace EmuDotNet.Core.Test.MC6800
             target.ExecuteClock();
 
             Assert.True(target.Registers.I);
+        }
+
+        [Fact]
+        public void SBA_Subtracts_Positive_Values()
+        {
+            var target = GetTestTarget(Instruction.SBA);
+
+            target.Registers.A = 123;
+            target.Registers.B = 60;
+            target.ExecuteClock();
+
+            Assert.Equal(63, target.Registers.A);
+        }
+
+        [Fact]
+        public void SBA_Subtracts_Negative_Result()
+        {
+            var target = GetTestTarget(Instruction.SBA);
+
+            target.Registers.A = 60;
+            target.Registers.B = 123;
+            target.ExecuteClock();
+
+            const sbyte expected = -63;
+            Assert.Equal(unchecked((byte) expected), target.Registers.A);
+        }
+
+        [Fact]
+        public void SBA_Sets_Sign_Flag()
+        {
+            var target = GetTestTarget(Instruction.SBA);
+
+            target.Registers.A = 60;
+            target.Registers.B = 123;
+            target.ExecuteClock();
+
+            Assert.True(target.Registers.N);
+        }
+
+        [Fact]
+        public void SBA_Sets_Zero_Flag()
+        {
+            var target = GetTestTarget(Instruction.SBA);
+
+            target.Registers.A = 60;
+            target.Registers.B = 60;
+            target.ExecuteClock();
+
+            Assert.True(target.Registers.Z);
         }
 
         // Old tests below

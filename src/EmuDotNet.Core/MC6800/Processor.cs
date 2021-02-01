@@ -141,6 +141,9 @@ namespace EmuDotNet.Core.MC6800
                 case Instruction.SEI:
                     _registers.I = true;
                     break;
+                case Instruction.SBA:
+                    SubtractAccumulators();
+                    break;
                 // Old organization below
                 case Instruction.ADD_A_IMM:
                 case Instruction.ADD_A_DIR:
@@ -213,6 +216,11 @@ namespace EmuDotNet.Core.MC6800
                 default:
                     return;
             }
+        }
+
+        private void SubtractAccumulators()
+        {
+            OperateOn(Accumulator.A, x => _alu.Subtract(x, _registers.B));
         }
 
         private void Add(Accumulator reg, AddressingMode mode)

@@ -9,6 +9,18 @@
             _registers = registers;
         }
 
+        public byte Subtract(byte val1, byte val2)
+        {
+            var inv = (byte) ((byte) (val2 ^ 0xFF) + 1);
+            var result = val1 + inv;
+            _registers.N = (result & 0x80) != 0;
+            _registers.Z = result == 0;
+            _registers.V = (val1 & 0x80) == 0 && (val2 & 0x80) == 0 && (result & 0x80) != 0 ||
+                           (val1 & 0x80) != 0 && (val2 & 0x80) != 0 && (result & 0x80) == 0;
+            _registers.C = (result & 0x100) != 0;
+            return (byte) (result & 0xFF);
+        }
+
         public byte Add(byte val1, byte val2, bool useCarry = false)
         {
             var carry = useCarry && _registers.C ? 1 : 0;
