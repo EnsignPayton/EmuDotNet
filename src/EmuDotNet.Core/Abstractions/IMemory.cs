@@ -1,8 +1,7 @@
-﻿namespace EmuDotNet.Core.Abstractions
+﻿namespace EmuDotNet.Core.Abstractions;
+
+public interface IMemory
 {
-    public interface IMemory
-    {
-        byte GetByte(ushort address);
-        void SetByte(ushort address, byte value);
-    }
+    byte GetByte(ushort address);
+    void SetByte(ushort address, byte value);
 }

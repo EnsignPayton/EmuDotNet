@@ -1,13 +1,12 @@
-﻿namespace EmuDotNet.Core.MC6800
+﻿namespace EmuDotNet.Core.MC6800;
+
+public enum AddressingMode
 {
-    public enum AddressingMode
-    {
-        ACC,
-        IMM,
-        DIR,
-        EXT,
-        IDX,
-        INH,
-        REL
-    }
+    ACC,
+    IMM,
+    DIR,
+    EXT,
+    IDX,
+    INH,
+    REL
 }

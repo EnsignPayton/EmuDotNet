@@ -1,8 +1,7 @@
-﻿namespace EmuDotNet.Core.MC6800
+﻿namespace EmuDotNet.Core.MC6800;
+
+public enum Accumulator
 {
-    public enum Accumulator
-    {
-        A,
-        B
-    }
+    A,
+    B
 }

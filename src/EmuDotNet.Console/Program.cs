@@ -1,9 +1,8 @@
-﻿namespace EmuDotNet.Console
+﻿namespace EmuDotNet.Console;
+
+internal static class Program
 {
-    internal static class Program
+    private static void Main(string[] args)
     {
-        private static void Main(string[] args)
-        {
-        }
     }
 }

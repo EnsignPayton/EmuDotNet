@@ -1,7 +1,6 @@
-﻿namespace EmuDotNet.Core.Abstractions
+﻿namespace EmuDotNet.Core.Abstractions;
+
+public interface IProcessor
 {
-    public interface IProcessor
-    {
-        void ExecuteClock();
-    }
+    void ExecuteClock();
 }
