@@ -1,5 +1,4 @@
-﻿using System;
-using EmuDotNet.Core.Abstractions;
+﻿using EmuDotNet.Core.Abstractions;
 
 namespace EmuDotNet.Core.MC6800;
 

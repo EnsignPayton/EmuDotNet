@@ -1,6 +1,5 @@
 ﻿using EmuDotNet.Core.Abstractions;
 using EmuDotNet.Core.MC6800;
-using Xunit;
 
 namespace EmuDotNet.Core.Test.MC6800;
 

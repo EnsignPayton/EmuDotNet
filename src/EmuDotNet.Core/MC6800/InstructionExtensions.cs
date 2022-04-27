@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace EmuDotNet.Core.MC6800;
+﻿namespace EmuDotNet.Core.MC6800;
 
 public static class InstructionExtensions
 {
