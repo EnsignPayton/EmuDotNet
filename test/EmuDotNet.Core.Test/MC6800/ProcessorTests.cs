@@ -1,7 +1,6 @@
 ﻿using EmuDotNet.Core.Abstractions;
-using EmuDotNet.Core.MC6800;
 
-namespace EmuDotNet.Core.Test.MC6800;
+namespace EmuDotNet.Core.MC6800;
 
 public class ProcessorTests
 {
@@ -590,15 +589,15 @@ public class ProcessorTests
     private class ProcessorFacade : IProcessor
     {
         private readonly Processor _processor;
-        private readonly SimpleMemory _memory;
+        private readonly SimpleBus _bus;
 
         public Registers Registers => _processor.Registers;
-        public byte[] Data => _memory.Data;
+        public byte[] Data => _bus.Data;
 
         public ProcessorFacade(params byte[] data)
         {
-            _memory = new SimpleMemory(data);
-            _processor = new Processor(_memory);
+            _bus = new SimpleBus(data);
+            _processor = new Processor(_bus);
         }
 
         public void ExecuteClock()

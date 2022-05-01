@@ -2,7 +2,7 @@
 
 namespace EmuDotNet.Core;
 
-public class SimpleMemory : IMemory
+public class SimpleBus : IBus
 {
     private const int DataSize = ushort.MaxValue + 1;
 
@@ -10,11 +10,11 @@ public class SimpleMemory : IMemory
 
     public byte[] Data => _data;
 
-    public SimpleMemory()
+    public SimpleBus()
     {
     }
 
-    public SimpleMemory(ReadOnlySpan<byte> data)
+    public SimpleBus(ReadOnlySpan<byte> data)
     {
         data.CopyTo(_data);
     }

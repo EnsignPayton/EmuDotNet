@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <ImplicitUsings>true</ImplicitUsings>
+    <RootNamespace>EmuDotNet.Core</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

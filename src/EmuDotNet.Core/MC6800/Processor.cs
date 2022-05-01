@@ -4,16 +4,15 @@ namespace EmuDotNet.Core.MC6800;
 
 public class Processor : IProcessor
 {
-    private readonly IMemory _memory;
+    private readonly IBus _bus;
     private readonly Registers _registers;
     private readonly ALU _alu;
 
     public Registers Registers => _registers;
 
-    public Processor(
-        IMemory memory)
+    public Processor(IBus bus)
     {
-        _memory = memory;
+        _bus = bus;
         _registers = new Registers();
         _alu = new ALU(_registers);
     }
@@ -30,7 +29,7 @@ public class Processor : IProcessor
 
     private byte NextImmediate()
     {
-        return _memory.GetByte(_registers.PC++);
+        return _bus.GetByte(_registers.PC++);
     }
 
     private ushort DirectAddress()
@@ -40,7 +39,7 @@ public class Processor : IProcessor
 
     private byte NextDirect()
     {
-        return _memory.GetByte(NextImmediate());
+        return _bus.GetByte(NextImmediate());
     }
 
     private ushort IndexedAddress()
@@ -52,7 +51,7 @@ public class Processor : IProcessor
 
     private byte NextIndexed()
     {
-        return _memory.GetByte(IndexedAddress());
+        return _bus.GetByte(IndexedAddress());
     }
 
     private ushort ExtendedAddress()
@@ -65,7 +64,7 @@ public class Processor : IProcessor
 
     private byte NextExtended()
     {
-        return _memory.GetByte(ExtendedAddress());
+        return _bus.GetByte(ExtendedAddress());
     }
 
     private byte NextRelative()
@@ -73,7 +72,7 @@ public class Processor : IProcessor
         var rel = NextImmediate();
         var offset = unchecked((sbyte) rel);
         var address = _registers.PC + offset;
-        return _memory.GetByte((ushort) address);
+        return _bus.GetByte((ushort) address);
     }
 
     private byte NextValue(AddressingMode mode) => mode switch
@@ -247,7 +246,7 @@ public class Processor : IProcessor
     private void ClearMemory(AddressingMode mode)
     {
         var address = NextAddress(mode);
-        _memory.SetByte(address, _alu.Clear());
+        _bus.SetByte(address, _alu.Clear());
     }
 
     private void ComplementAccumulator(Accumulator reg)
@@ -258,8 +257,8 @@ public class Processor : IProcessor
     private void ComplementMemory(AddressingMode mode)
     {
         var address = NextAddress(mode);
-        var value = _memory.GetByte(address);
-        _memory.SetByte(address, _alu.Complement(value));
+        var value = _bus.GetByte(address);
+        _bus.SetByte(address, _alu.Complement(value));
     }
 
     private void NegateAccumulator(Accumulator reg)
@@ -270,7 +269,7 @@ public class Processor : IProcessor
     private void NegateMemory(AddressingMode mode)
     {
         var address = NextAddress(mode);
-        var value = _memory.GetByte(address);
-        _memory.SetByte(address, _alu.Negate(value));
+        var value = _bus.GetByte(address);
+        _bus.SetByte(address, _alu.Negate(value));
     }
 }
