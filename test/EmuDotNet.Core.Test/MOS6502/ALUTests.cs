@@ -908,21 +908,20 @@ public class ALUTests
 
     #endregion
 
-    // TODO: Finish this
     #region SBC
-#if FALSE
 
     [Theory]
     [InlineData(0, 0, 0)]
     [InlineData(1, 1, 0)]
     [InlineData(2, 1, 1)]
     [InlineData(30, 20, 10)]
-    [InlineData(256, 100, 156)]
+    [InlineData(255, 100, 155)]
     [InlineData(100, 200, 156)]
     public void SBC_Subtracts_Bytes(byte a, byte m, byte expected)
     {
         var target = GetTarget();
         target.Registers.A = a;
+        target.Registers.C = true;
         target.SubtractWithCarry(m);
         Assert.Equal(expected, target.Registers.A);
     }
@@ -936,6 +935,7 @@ public class ALUTests
     {
         var target = GetTarget();
         target.Registers.A = Cast(a);
+        target.Registers.C = true;
         target.SubtractWithCarry(Cast(m));
         Assert.Equal(expected, Cast(target.Registers.A));
     }
@@ -945,24 +945,26 @@ public class ALUTests
     {
         var target = GetTarget();
         target.Registers.A = 100;
-        target.Registers.C = true;
+        target.Registers.C = false;
         target.SubtractWithCarry(50);
-        Assert.Equal(40, target.Registers.A);
+        Assert.Equal(49, target.Registers.A);
     }
 
     [Fact]
-    public void SBC_Clears_C()
+    public void SBC_Sets_C()
     {
         var target = GetTarget();
-        target.Registers.A = 250;
-        target.SubtractWithCarry(150);
-        Assert.False(target.Registers.C);
+        target.Registers.A = 0x50;
+        target.Registers.C = true;
+        target.SubtractWithCarry(0x30);
+        Assert.True(target.Registers.C);
     }
 
     [Fact]
     public void SBC_Sets_Z()
     {
         var target = GetTarget();
+        target.Registers.C = true;
         target.SubtractWithCarry(0);
         Assert.True(target.Registers.Z);
     }
@@ -987,7 +989,6 @@ public class ALUTests
         Assert.True(target.Registers.N);
     }
 
-#endif
     #endregion
 
     #region Set Flags

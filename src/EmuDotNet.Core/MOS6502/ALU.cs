@@ -223,6 +223,7 @@ public class ALU
     {
         var comp = (byte) (value ^ 0xFF);
         AddWithCarry(comp);
+        _reg.Z = _reg.A == 0;
     }
 
     // SEC
