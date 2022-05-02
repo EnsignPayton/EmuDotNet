@@ -57,7 +57,10 @@ public class Processor : IProcessor
         switch (mode)
         {
             case AddressMode.IMP:
+            {
+                _cycles++;
                 return _reg.A;
+            }
             case AddressMode.IMM:
             {
                 var val = _bus[_reg.PC];
