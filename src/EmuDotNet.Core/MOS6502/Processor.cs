@@ -168,20 +168,22 @@ public class Processor : IProcessor
 
     private void Execute(Instruction instruction, byte operand)
     {
-        if (false)
+        switch (instruction)
         {
-        }
-        else if (instruction == Instruction.ADC)
-        {
-            _alu.AddWithCarry(operand);
-        }
-        else if (instruction == Instruction.LDA)
-        {
-            _reg.A = operand;
-        }
-        else
-        {
-            throw new NotImplementedException();
+            case Instruction.ADC:
+                _alu.AddWithCarry(operand);
+                break;
+            case Instruction.AND:
+                _alu.LogicalAnd(operand);
+                break;
+            case Instruction.ASL:
+                _reg.A = _alu.ArithmeticShiftLeft(_reg.A);
+                break;
+            case Instruction.LDA:
+                _reg.A = operand;
+                break;
+            default:
+                throw new NotImplementedException();
         }
     }
 }

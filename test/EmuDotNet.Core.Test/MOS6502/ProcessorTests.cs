@@ -2,6 +2,8 @@
 
 public class ProcessorTests
 {
+    #region ADC
+
     [Fact]
     public void ADC_IMM()
     {
@@ -172,6 +174,33 @@ public class ProcessorTests
         ExecuteCycles(target, 6);
 
         Assert.Equal(0xB6, target.Registers.A);
+    }
+
+    #endregion
+
+    [Fact]
+    public void AND_IMM()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Bus[0x8000] = 0x29;
+        target.Bus[0x8001] = 0x0F;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0x05, target.Registers.A);
+    }
+
+    [Fact]
+    public void ASL_IMP()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Bus[0x8000] = 0x0A;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0x4A, target.Registers.A);
     }
 
     // TODO: In Order, etc
