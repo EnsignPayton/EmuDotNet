@@ -1,4 +1,6 @@
-﻿namespace EmuDotNet.Core.MOS6502;
+﻿using System.Runtime.InteropServices;
+
+namespace EmuDotNet.Core.MOS6502;
 
 public class ProcessorTests
 {
@@ -203,6 +205,57 @@ public class ProcessorTests
         Assert.Equal(0x4A, target.Registers.A);
     }
 
+    [Fact]
+    public void BCC_REL_NoBranch()
+    {
+        var target = GetTarget();
+        target.Registers.C = true;
+        target.Bus[0x8000] = 0x90;
+        target.Bus[0x8001] = 0x04;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0x8002, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BCC_REL_Branch()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0x90;
+        target.Bus[0x8001] = 0x04;
+
+        ExecuteCycles(target, 3);
+
+        Assert.Equal(0x8006, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BCC_REL_PageCross()
+    {
+        var target = GetTarget();
+        target.Registers.PC = 0x80F0;
+        target.Bus[0x80F0] = 0x90;
+        target.Bus[0x80F1] = 0x10;
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0x8102, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BCC_REL_Negative()
+    {
+        const sbyte offset = -16;
+        var target = GetTarget();
+        target.Bus[0x8000] = 0x90;
+        target.Bus[0x8001] = Cast(offset);
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0x7FF2, target.Registers.PC);
+    }
+
     // TODO: In Order, etc
 
     [Fact]
@@ -237,4 +290,10 @@ public class ProcessorTests
         target.Registers.PC = 0x8000;
         return target;
     }
+
+    private static byte Cast(sbyte value) =>
+        MemoryMarshal.Cast<sbyte, byte>(stackalloc sbyte[] {value})[0];
+
+    private static sbyte Cast(byte value) =>
+        MemoryMarshal.Cast<byte, sbyte>(stackalloc byte[] {value})[0];
 }

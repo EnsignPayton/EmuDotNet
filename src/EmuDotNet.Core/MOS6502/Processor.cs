@@ -1,4 +1,5 @@
-﻿using EmuDotNet.Core.Abstractions;
+﻿using System.Runtime.InteropServices;
+using EmuDotNet.Core.Abstractions;
 
 namespace EmuDotNet.Core.MOS6502;
 
@@ -164,6 +165,13 @@ public class Processor : IProcessor
                 _cycles++;
                 return val;
             }
+            case AddressMode.REL:
+            {
+                var offset = _bus[_reg.PC];
+                _reg.PC++;
+                _cycles++;
+                return offset;
+            }
             default:
                 throw new NotImplementedException();
         }
@@ -182,6 +190,9 @@ public class Processor : IProcessor
             case Instruction.ASL:
                 _reg.A = _alu.ArithmeticShiftLeft(_reg.A);
                 break;
+            case Instruction.BCC:
+                BranchIfCarryClear(operand);
+                break;
             case Instruction.LDA:
                 _reg.A = operand;
                 break;
@@ -189,4 +200,22 @@ public class Processor : IProcessor
                 throw new NotImplementedException();
         }
     }
+
+    private void BranchIfCarryClear(byte value)
+    {
+        if (!_reg.C)
+        {
+            var offset = Cast(value);
+            _cycles++;
+            var mod = offset + (_reg.PC & 0xFF);
+            if (mod is < 0 or > 256) _cycles++;
+            _reg.PC = (ushort) (_reg.PC + offset);
+        }
+    }
+
+    private static byte Cast(sbyte value) =>
+        MemoryMarshal.Cast<sbyte, byte>(stackalloc sbyte[] {value})[0];
+
+    private static sbyte Cast(byte value) =>
+        MemoryMarshal.Cast<byte, sbyte>(stackalloc byte[] {value})[0];
 }
