@@ -256,6 +256,112 @@ public class ProcessorTests
         Assert.Equal(0x7FF2, target.Registers.PC);
     }
 
+    [Fact]
+    public void BCS_REL()
+    {
+        var target = GetTarget();
+        target.Registers.C = true;
+        target.Bus[0x8000] = 0xB0;
+        target.Bus[0x8001] = 0x04;
+
+        ExecuteCycles(target, 3);
+
+        Assert.Equal(0x8006, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BEQ_REL()
+    {
+        var target = GetTarget();
+        target.Registers.Z = true;
+        target.Bus[0x8000] = 0xF0;
+        target.Bus[0x8001] = 0x04;
+
+        ExecuteCycles(target, 3);
+
+        Assert.Equal(0x8006, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BIT_ZPG()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xFF;
+        target.Bus[0x0010] = 0x80;
+        target.Bus[0x8000] = 0x24;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 3);
+
+        Assert.False(target.Registers.Z);
+        Assert.False(target.Registers.V);
+        Assert.True(target.Registers.N);
+    }
+
+    [Fact]
+    public void BMI_REL()
+    {
+        var target = GetTarget();
+        target.Registers.N = true;
+        target.Bus[0x8000] = 0x30;
+        target.Bus[0x8001] = 0x04;
+
+        ExecuteCycles(target, 3);
+
+        Assert.Equal(0x8006, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BNE_REL()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0xD0;
+        target.Bus[0x8001] = 0x04;
+
+        ExecuteCycles(target, 3);
+
+        Assert.Equal(0x8006, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BPL_REL()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0x10;
+        target.Bus[0x8001] = 0x04;
+
+        ExecuteCycles(target, 3);
+
+        Assert.Equal(0x8006, target.Registers.PC);
+    }
+
+    // TODO: BRK
+
+    [Fact]
+    public void BVC_REL()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0x50;
+        target.Bus[0x8001] = 0x04;
+
+        ExecuteCycles(target, 3);
+
+        Assert.Equal(0x8006, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BVS_REL()
+    {
+        var target = GetTarget();
+        target.Registers.V = true;
+        target.Bus[0x8000] = 0x70;
+        target.Bus[0x8001] = 0x04;
+
+        ExecuteCycles(target, 3);
+
+        Assert.Equal(0x8006, target.Registers.PC);
+    }
+
     // TODO: In Order, etc
 
     [Fact]

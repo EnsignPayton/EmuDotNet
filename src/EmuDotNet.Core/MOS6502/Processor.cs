@@ -193,6 +193,31 @@ public class Processor : IProcessor
             case Instruction.BCC:
                 BranchIfCarryClear(operand);
                 break;
+            case Instruction.BCS:
+                BranchIfCarrySet(operand);
+                break;
+            case Instruction.BEQ:
+                BranchIfEqual(operand);
+                break;
+            case Instruction.BIT:
+                _alu.BitTest(operand);
+                break;
+            case Instruction.BMI:
+                BranchIfMinus(operand);
+                break;
+            case Instruction.BNE:
+                BranchIfNotEqual(operand);
+                break;
+            case Instruction.BPL:
+                BranchIfPositive(operand);
+                break;
+            // TODO: BRK
+            case Instruction.BVC:
+                BranchIfOverflowClear(operand);
+                break;
+            case Instruction.BVS:
+                BranchIfOverflowSet(operand);
+                break;
             case Instruction.LDA:
                 _reg.A = operand;
                 break;
@@ -204,13 +229,58 @@ public class Processor : IProcessor
     private void BranchIfCarryClear(byte value)
     {
         if (!_reg.C)
-        {
-            var offset = Cast(value);
-            _cycles++;
-            var mod = offset + (_reg.PC & 0xFF);
-            if (mod is < 0 or > 256) _cycles++;
-            _reg.PC = (ushort) (_reg.PC + offset);
-        }
+            BranchWithOffset(value);
+    }
+
+    private void BranchIfCarrySet(byte value)
+    {
+        if (_reg.C)
+            BranchWithOffset(value);
+    }
+
+    private void BranchIfEqual(byte value)
+    {
+        if (_reg.Z)
+            BranchWithOffset(value);
+    }
+
+    private void BranchIfMinus(byte value)
+    {
+        if (_reg.N)
+            BranchWithOffset(value);
+    }
+
+    private void BranchIfNotEqual(byte value)
+    {
+        if (!_reg.Z)
+            BranchWithOffset(value);
+    }
+
+    private void BranchIfPositive(byte value)
+    {
+        if (!_reg.N)
+            BranchWithOffset(value);
+    }
+
+    private void BranchIfOverflowClear(byte value)
+    {
+        if (!_reg.V)
+            BranchWithOffset(value);
+    }
+
+    private void BranchIfOverflowSet(byte value)
+    {
+        if (_reg.V)
+            BranchWithOffset(value);
+    }
+
+    private void BranchWithOffset(byte value)
+    {
+        var offset = Cast(value);
+        _cycles++;
+        var mod = offset + (_reg.PC & 0xFF);
+        if (mod is < 0 or > 256) _cycles++;
+        _reg.PC = (ushort) (_reg.PC + offset);
     }
 
     private static byte Cast(sbyte value) =>
