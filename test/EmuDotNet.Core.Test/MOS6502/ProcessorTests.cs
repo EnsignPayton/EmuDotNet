@@ -651,6 +651,294 @@ public class ProcessorTests
         ExecuteCycles(target, 2);
     }
 
+    [Fact]
+    public void ORA_IMM()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Bus[0x8000] = 0x09;
+        target.Bus[0x8001] = 0x0F;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0xAF, target.Registers.A);
+    }
+
+    [Fact(Skip = "TODO: Stack")]
+    public void PHA_IMP()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Bus[0x8000] = 0x48;
+
+        ExecuteCycles(target, 3);
+
+        // TODO: Test stack
+    }
+
+    [Fact(Skip = "TODO: Stack")]
+    public void PHP_IMP()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0x08;
+
+        ExecuteCycles(target, 3);
+
+        // TODO: Test Stack
+    }
+
+    [Fact(Skip = "TODO: Stack")]
+    public void PLA_IMP()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0x68;
+
+        ExecuteCycles(target, 4);
+
+        // TODO: Test Stack
+    }
+
+    [Fact(Skip = "TODO: Stack")]
+    public void PLP_IMP()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0x28;
+
+        ExecuteCycles(target, 4);
+
+        // TODO: Test Stack
+    }
+
+    [Fact]
+    public void ROL_IMP()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Bus[0x8000] = 0x2A;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0x4A, target.Registers.A);
+    }
+
+    [Fact(Skip = "TODO: Store")]
+    public void ROL_ZPG()
+    {
+        var target = GetTarget();
+        target.Bus[0x0010] = 0xA5;
+        target.Bus[0x8000] = 0x26;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 5);
+
+        Assert.Equal(0x4A, target.Bus[0x0010]);
+    }
+
+    [Fact]
+    public void ROR_IMP()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Bus[0x8000] = 0x6A;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0x52, target.Registers.A);
+    }
+
+    [Fact(Skip = "TODO: Store")]
+    public void ROR_ZPG()
+    {
+        var target = GetTarget();
+        target.Bus[0x0010] = 0xA5;
+        target.Bus[0x8000] = 0x66;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 5);
+
+        Assert.Equal(0x52, target.Bus[0x0010]);
+    }
+
+    [Fact(Skip = "TODO: Stack")]
+    public void RTI_IMP()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0x40;
+
+        ExecuteCycles(target, 6);
+
+        // TODO: Test Stack
+    }
+
+    [Fact(Skip = "TODO: Stack")]
+    public void RTS_IMP()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0x60;
+
+        ExecuteCycles(target, 6);
+
+        // TODO: Test Stack
+    }
+
+    [Fact]
+    public void SBC_IMM()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Registers.C = true;
+        target.Bus[0x8000] = 0xE9;
+        target.Bus[0x8001] = 0x11;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0x94, target.Registers.A);
+    }
+
+    [Fact]
+    public void SEC_IMP()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0x38;
+
+        ExecuteCycles(target, 2);
+
+        Assert.True(target.Registers.C);
+    }
+
+    [Fact]
+    public void SED_IMP()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0xF8;
+
+        ExecuteCycles(target, 2);
+
+        Assert.True(target.Registers.D);
+    }
+
+    [Fact]
+    public void SEI_IMP()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0x78;
+
+        ExecuteCycles(target, 2);
+
+        Assert.True(target.Registers.I);
+    }
+
+    [Fact(Skip = "TODO: Store")]
+    public void STA_ZPG()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Bus[0x8000] = 0x85;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 3);
+
+        Assert.Equal(0xA5, target.Bus[0x0010]);
+    }
+
+    [Fact(Skip = "TODO: Store")]
+    public void STX_ZPG()
+    {
+        var target = GetTarget();
+        target.Registers.X = 0xA5;
+        target.Bus[0x8000] = 0x86;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 3);
+
+        Assert.Equal(0xA5, target.Bus[0x0010]);
+    }
+
+    [Fact(Skip = "TODO: Store")]
+    public void STY_ZPG()
+    {
+        var target = GetTarget();
+        target.Registers.Y = 0xA5;
+        target.Bus[0x8000] = 0x84;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 3);
+
+        Assert.Equal(0xA5, target.Bus[0x0010]);
+    }
+
+    [Fact]
+    public void TAX_IMP()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Bus[0x8000] = 0xAA;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0xA5, target.Registers.X);
+    }
+
+    [Fact]
+    public void TAY_IMP()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Bus[0x8000] = 0xA8;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0xA5, target.Registers.Y);
+    }
+
+    [Fact]
+    public void TSX_IMP()
+    {
+        var target = GetTarget();
+        target.Registers.SP = 0xA5;
+        target.Bus[0x8000] = 0xBA;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0xA5, target.Registers.X);
+    }
+
+    [Fact]
+    public void TXA_IMP()
+    {
+        var target = GetTarget();
+        target.Registers.X = 0xA5;
+        target.Bus[0x8000] = 0x8A;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0xA5, target.Registers.A);
+    }
+
+    [Fact]
+    public void TXS_IMP()
+    {
+        var target = GetTarget();
+        target.Registers.X = 0xA5;
+        target.Bus[0x8000] = 0x9A;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0xA5, target.Registers.SP);
+    }
+
+    [Fact]
+    public void TYA_IMP()
+    {
+        var target = GetTarget();
+        target.Registers.Y = 0xA5;
+        target.Bus[0x8000] = 0x98;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0xA5, target.Registers.A);
+    }
+
     private static void ExecuteCycles(Processor target, int cycles)
     {
         target.ExecuteClock();

@@ -283,6 +283,47 @@ public class Processor : IProcessor
                 break;
             case Instruction.NOP:
                 break;
+            case Instruction.ORA:
+                _alu.LogicalInclusiveOr(operand);
+                break;
+            case Instruction.ROL:
+                // TODO: The memory one
+                _reg.A = _alu.RotateLeft(_reg.A);
+                break;
+            case Instruction.ROR:
+                // TODO: The memory one
+                _reg.A = _alu.RotateRight(_reg.A);
+                break;
+            case Instruction.SBC:
+                _alu.SubtractWithCarry(operand);
+                break;
+            case Instruction.SEC:
+                _alu.SetCarry();
+                break;
+            case Instruction.SED:
+                _alu.SetDecimal();
+                break;
+            case Instruction.SEI:
+                _alu.SetInterruptDisable();
+                break;
+            case Instruction.TAX:
+                _alu.TransferAtoX();
+                break;
+            case Instruction.TAY:
+                _alu.TransferAtoY();
+                break;
+            case Instruction.TSX:
+                _alu.TransferStoX();
+                break;
+            case Instruction.TXA:
+                _alu.TransferXtoA();
+                break;
+            case Instruction.TXS:
+                _alu.TransferXtoS();
+                break;
+            case Instruction.TYA:
+                _alu.TransferYtoA();
+                break;
             default:
                 throw new NotImplementedException();
         }
