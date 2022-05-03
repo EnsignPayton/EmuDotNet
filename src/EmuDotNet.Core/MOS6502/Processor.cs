@@ -218,6 +218,27 @@ public class Processor : IProcessor
             case Instruction.BVS:
                 BranchIfOverflowSet(operand);
                 break;
+            case Instruction.CLC:
+                _reg.C = false;
+                break;
+            case Instruction.CLD:
+                _reg.D = false;
+                break;
+            case Instruction.CLI:
+                _reg.I = false;
+                break;
+            case Instruction.CLV:
+                _reg.V = false;
+                break;
+            case Instruction.CMP:
+                _alu.Compare(operand);
+                break;
+            case Instruction.CPX:
+                _alu.CompareX(operand);
+                break;
+            case Instruction.CPY:
+                _alu.CompareY(operand);
+                break;
             case Instruction.LDA:
                 _reg.A = operand;
                 break;

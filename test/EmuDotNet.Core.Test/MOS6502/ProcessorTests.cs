@@ -362,6 +362,96 @@ public class ProcessorTests
         Assert.Equal(0x8006, target.Registers.PC);
     }
 
+    [Fact]
+    public void CLC_IMP()
+    {
+        var target = GetTarget();
+        target.Registers.C = true;
+        target.Bus[0x8000] = 0x18;
+
+        ExecuteCycles(target, 2);
+
+        Assert.False(target.Registers.C);
+    }
+
+    [Fact]
+    public void CLD_IMP()
+    {
+        var target = GetTarget();
+        target.Registers.D = true;
+        target.Bus[0x8000] = 0xD8;
+
+        ExecuteCycles(target, 2);
+
+        Assert.False(target.Registers.D);
+    }
+
+    [Fact]
+    public void CLI_IMP()
+    {
+        var target = GetTarget();
+        target.Registers.I = true;
+        target.Bus[0x8000] = 0x58;
+
+        ExecuteCycles(target, 2);
+
+        Assert.False(target.Registers.I);
+    }
+
+    [Fact]
+    public void CLV_IMP()
+    {
+        var target = GetTarget();
+        target.Registers.V = true;
+        target.Bus[0x8000] = 0xB8;
+
+        ExecuteCycles(target, 2);
+
+        Assert.False(target.Registers.V);
+    }
+
+    [Fact]
+    public void CMP_IMM()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Bus[0x8000] = 0xC9;
+        target.Bus[0x8001] = 0xA5;
+
+        ExecuteCycles(target, 2);
+
+        Assert.True(target.Registers.Z);
+        Assert.False(target.Registers.N);
+    }
+
+    [Fact]
+    public void CPX_IMM()
+    {
+        var target = GetTarget();
+        target.Registers.X = 0xA5;
+        target.Bus[0x8000] = 0xE0;
+        target.Bus[0x8001] = 0xA5;
+
+        ExecuteCycles(target, 2);
+
+        Assert.True(target.Registers.Z);
+        Assert.False(target.Registers.N);
+    }
+
+    [Fact]
+    public void CPY_IMM()
+    {
+        var target = GetTarget();
+        target.Registers.Y = 0xA5;
+        target.Bus[0x8000] = 0xC0;
+        target.Bus[0x8001] = 0xA5;
+
+        ExecuteCycles(target, 2);
+
+        Assert.True(target.Registers.Z);
+        Assert.False(target.Registers.N);
+    }
+
     // TODO: In Order, etc
 
     [Fact]
