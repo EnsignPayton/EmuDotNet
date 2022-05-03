@@ -554,7 +554,7 @@ public class ProcessorTests
         Assert.Equal(0xA6, target.Registers.Y);
     }
 
-    [Fact(Skip = "TODO: Address as operand")]
+    [Fact]
     public void JMP_ABS()
     {
         var target = GetTarget();

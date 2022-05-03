@@ -30,8 +30,8 @@ public class Processor : IProcessor
             _cycles++;
 
             var (instruction, mode) = OpcodeParser.Parse(val);
-            var operand = ReadOperand(mode);
-            Execute(instruction, operand);
+            var operand = ReadOperand(mode, out var address);
+            Execute(instruction, operand, address);
         }
 
         _cycles--;
@@ -53,8 +53,10 @@ public class Processor : IProcessor
         throw new NotImplementedException();
     }
 
-    private byte ReadOperand(AddressMode mode)
+    private byte ReadOperand(AddressMode mode, out ushort outAddress)
     {
+        // Default
+        outAddress = 0xFFFF;
         switch (mode)
         {
             case AddressMode.IMP:
@@ -76,6 +78,7 @@ public class Processor : IProcessor
                 _cycles++;
                 var val = _bus[address];
                 _cycles++;
+                outAddress = address;
                 return val;
             }
             case AddressMode.ZPX:
@@ -101,6 +104,7 @@ public class Processor : IProcessor
                 var address = (ushort) ((high << 8) + low);
                 var val = _bus[address];
                 _cycles++;
+                outAddress = address;
                 return val;
             }
             case AddressMode.ABX:
@@ -177,7 +181,7 @@ public class Processor : IProcessor
         }
     }
 
-    private void Execute(Instruction instruction, byte operand)
+    private void Execute(Instruction instruction, byte operand, ushort address)
     {
         switch (instruction)
         {
@@ -263,7 +267,9 @@ public class Processor : IProcessor
                 _alu.IncrementY();
                 break;
             case Instruction.JMP:
-                // TODO: I need address, not value...
+                _reg.PC = address;
+                // Didn't actually need to read the address - so don't maybe?
+                _cycles--;
                 break;
             case Instruction.JSR:
                 // TODO: Address; Stack
@@ -305,6 +311,9 @@ public class Processor : IProcessor
                 break;
             case Instruction.SEI:
                 _alu.SetInterruptDisable();
+                break;
+            case Instruction.STA:
+                // TODO: This
                 break;
             case Instruction.TAX:
                 _alu.TransferAtoX();
