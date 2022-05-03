@@ -243,8 +243,45 @@ public class Processor : IProcessor
                 // TODO: Write result?
                 _alu.Decrement(operand);
                 break;
+            case Instruction.DEX:
+                _alu.DecrementX();
+                break;
+            case Instruction.DEY:
+                _alu.DecrementY();
+                break;
+            case Instruction.EOR:
+                _alu.ExclusiveOr(operand);
+                break;
+            case Instruction.INC:
+                // TODO: Write result!
+                _alu.Increment(operand);
+                break;
+            case Instruction.INX:
+                _alu.IncrementX();
+                break;
+            case Instruction.INY:
+                _alu.IncrementY();
+                break;
+            case Instruction.JMP:
+                // TODO: I need address, not value...
+                break;
+            case Instruction.JSR:
+                // TODO: Address; Stack
+                break;
             case Instruction.LDA:
                 _reg.A = operand;
+                break;
+            case Instruction.LDX:
+                _reg.X = operand;
+                break;
+            case Instruction.LDY:
+                _reg.Y = operand;
+                break;
+            case Instruction.LSR:
+                // TODO: The memory one
+                _reg.A = _alu.LogicalShiftRight(operand);
+                break;
+            case Instruction.NOP:
                 break;
             default:
                 throw new NotImplementedException();

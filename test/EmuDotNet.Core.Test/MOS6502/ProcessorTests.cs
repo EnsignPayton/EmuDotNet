@@ -474,19 +474,181 @@ public class ProcessorTests
         Assert.Equal(0xA4, target.Bus[0x0010]);
     }
 
-    // TODO: In Order, etc
-
     [Fact]
-    public void LDA_Loads_Immediate()
+    public void DEX_IMP()
     {
         var target = GetTarget();
-        target.Registers.PC = 0x8000;
+        target.Registers.X = 0xA5;
+        target.Bus[0x8000] = 0xCA;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0xA4, target.Registers.X);
+        Assert.False(target.Registers.Z);
+        Assert.True(target.Registers.N);
+    }
+
+    [Fact]
+    public void DEY_IMP()
+    {
+        var target = GetTarget();
+        target.Registers.Y = 0xA5;
+        target.Bus[0x8000] = 0x88;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0xA4, target.Registers.Y);
+        Assert.False(target.Registers.Z);
+        Assert.True(target.Registers.N);
+    }
+
+    [Fact]
+    public void EOR_IMM()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0x0F;
+        target.Bus[0x8000] = 0x49;
+        target.Bus[0x8001] = 0x33;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0x3C, target.Registers.A);
+        Assert.False(target.Registers.Z);
+        Assert.False(target.Registers.N);
+    }
+
+    [Fact(Skip = "TODO: Store")]
+    public void INC_ZPG()
+    {
+        var target = GetTarget();
+        target.Bus[0x0010] = 0xA5;
+        target.Bus[0x8000] = 0xE6;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 5);
+
+        Assert.Equal(0xA6, target.Bus[0x0010]);
+    }
+
+    [Fact]
+    public void INX_IMP()
+    {
+        var target = GetTarget();
+        target.Registers.X = 0xA5;
+        target.Bus[0x8000] = 0xE8;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0xA6, target.Registers.X);
+    }
+
+    [Fact]
+    public void INY_IMP()
+    {
+        var target = GetTarget();
+        target.Registers.Y = 0xA5;
+        target.Bus[0x8000] = 0xC8;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0xA6, target.Registers.Y);
+    }
+
+    [Fact(Skip = "TODO: Address as operand")]
+    public void JMP_ABS()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0x4C;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 3);
+
+        Assert.Equal(0x1234, target.Registers.PC);
+    }
+
+    [Fact(Skip = "TODO: Address as operand; Stack")]
+    public void JSR_ABS()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0x20;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 6);
+
+        // TODO: Test stack
+        Assert.Equal(0x1234, target.Registers.PC);
+    }
+
+    [Fact]
+    public void LDA_IMM()
+    {
+        var target = GetTarget();
         target.Bus[0x8000] = 0xA9;
         target.Bus[0x8001] = 0xA5;
 
         ExecuteCycles(target, 2);
 
         Assert.Equal(0xA5, target.Registers.A);
+    }
+
+    [Fact]
+    public void LDX_IMM()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0xA2;
+        target.Bus[0x8001] = 0xA5;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0xA5, target.Registers.X);
+    }
+
+    [Fact]
+    public void LDY_IMM()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0xA0;
+        target.Bus[0x8001] = 0xA5;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0xA5, target.Registers.Y);
+    }
+
+    [Fact]
+    public void LSR_IMP()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Bus[0x8000] = 0x4A;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0x52, target.Registers.A);
+    }
+
+    [Fact(Skip = "TODO: Store")]
+    public void LSR_ZPG()
+    {
+        var target = GetTarget();
+        target.Bus[0x0010] = 0xA5;
+        target.Bus[0x8000] = 0x46;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 5);
+
+        Assert.Equal(0x52, target.Bus[0x0010]);
+    }
+
+    [Fact]
+    public void NOP_IMP()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0xEA;
+
+        ExecuteCycles(target, 2);
     }
 
     private static void ExecuteCycles(Processor target, int cycles)
