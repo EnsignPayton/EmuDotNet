@@ -335,7 +335,16 @@ public class ProcessorTests
         Assert.Equal(0x8006, target.Registers.PC);
     }
 
-    // TODO: BRK
+    [Fact(Skip = "TODO: Stack")]
+    public void BRK_IMP()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0x00;
+
+        ExecuteCycles(target, 7);
+
+        Assert.Equal(0xFFFE, target.Registers.PC);
+    }
 
     [Fact]
     public void BVC_REL()
@@ -450,6 +459,19 @@ public class ProcessorTests
 
         Assert.True(target.Registers.Z);
         Assert.False(target.Registers.N);
+    }
+
+    [Fact(Skip = "TODO: Store")]
+    public void DEC_ZPG()
+    {
+        var target = GetTarget();
+        target.Bus[0x0010] = 0xA5;
+        target.Bus[0x8000] = 0xC6;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 5);
+
+        Assert.Equal(0xA4, target.Bus[0x0010]);
     }
 
     // TODO: In Order, etc

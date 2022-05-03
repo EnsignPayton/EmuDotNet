@@ -239,6 +239,10 @@ public class Processor : IProcessor
             case Instruction.CPY:
                 _alu.CompareY(operand);
                 break;
+            case Instruction.DEC:
+                // TODO: Write result?
+                _alu.Decrement(operand);
+                break;
             case Instruction.LDA:
                 _reg.A = operand;
                 break;
