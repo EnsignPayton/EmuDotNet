@@ -630,7 +630,7 @@ public class ProcessorTests
         Assert.Equal(0x52, target.Registers.A);
     }
 
-    [Fact(Skip = "TODO: Store")]
+    [Fact]
     public void LSR_ZPG()
     {
         var target = GetTarget();
@@ -665,7 +665,7 @@ public class ProcessorTests
         Assert.Equal(0xAF, target.Registers.A);
     }
 
-    [Fact(Skip = "TODO: Stack")]
+    [Fact]
     public void PHA_IMP()
     {
         var target = GetTarget();
@@ -674,10 +674,11 @@ public class ProcessorTests
 
         ExecuteCycles(target, 3);
 
-        // TODO: Test stack
+        Assert.Equal(0xFE, target.Registers.SP);
+        Assert.Equal(0xA5, target.Bus[0x01FF]);
     }
 
-    [Fact(Skip = "TODO: Stack")]
+    [Fact]
     public void PHP_IMP()
     {
         var target = GetTarget();
@@ -685,29 +686,35 @@ public class ProcessorTests
 
         ExecuteCycles(target, 3);
 
-        // TODO: Test Stack
+        Assert.Equal(0xFE, target.Registers.SP);
+        // TODO: Test status reg
     }
 
-    [Fact(Skip = "TODO: Stack")]
+    [Fact]
     public void PLA_IMP()
     {
         var target = GetTarget();
+        target.Registers.SP = 0xFE;
+        target.Bus[0x01FE] = 0xA5;
         target.Bus[0x8000] = 0x68;
 
         ExecuteCycles(target, 4);
 
-        // TODO: Test Stack
+        Assert.Equal(0xFF, target.Registers.SP);
+        Assert.Equal(0xA5, target.Registers.A);
     }
 
-    [Fact(Skip = "TODO: Stack")]
+    [Fact]
     public void PLP_IMP()
     {
         var target = GetTarget();
+        target.Registers.SP = 0xFE;
         target.Bus[0x8000] = 0x28;
 
         ExecuteCycles(target, 4);
 
-        // TODO: Test Stack
+        Assert.Equal(0xFF, target.Registers.SP);
+        // TODO: Test Status reg
     }
 
     [Fact]

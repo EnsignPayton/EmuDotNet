@@ -281,7 +281,6 @@ public class Processor : IProcessor
                 _cycles--;
                 break;
             case Instruction.JSR:
-                // TODO: Address; Stack
                 Push(_reg.PC);
                 _reg.PC = address;
                 _cycles += 2;
@@ -296,13 +295,40 @@ public class Processor : IProcessor
                 _reg.Y = operand;
                 break;
             case Instruction.LSR:
-                // TODO: The memory one
-                _reg.A = _alu.LogicalShiftRight(operand);
+                // TODO: Detect this better
+                if (address == 0xFFFF)
+                {
+                    _reg.A = _alu.LogicalShiftRight(operand);
+                }
+                else
+                {
+                    var result = _alu.LogicalShiftRight(operand);
+                    _bus[address] = result;
+                    _cycles += 2;
+                }
                 break;
             case Instruction.NOP:
                 break;
             case Instruction.ORA:
                 _alu.LogicalInclusiveOr(operand);
+                break;
+            case Instruction.PHA:
+                Push(_reg.A);
+                _cycles++;
+                break;
+            case Instruction.PHP:
+                // TODO: Status reg
+                Push(0);
+                _cycles++;
+                break;
+            case Instruction.PLA:
+                _reg.A = PullByte();
+                _cycles += 2;
+                break;
+            case Instruction.PLP:
+                // TODO: Status reg
+                PullByte();
+                _cycles += 2;
                 break;
             case Instruction.ROL:
                 // TODO: The memory one
@@ -430,5 +456,12 @@ public class Processor : IProcessor
     {
         Push((byte) (value & 0xFF));
         Push((byte) ((value >> 8) & 0xFF));
+    }
+
+    private byte PullByte()
+    {
+        var value = _bus[(ushort) (0x0100 + _reg.SP)];
+        _reg.SP++;
+        return value;
     }
 }
