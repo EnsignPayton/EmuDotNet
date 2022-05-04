@@ -243,12 +243,13 @@ public class Processor : IProcessor
                 _alu.CompareY(operand);
                 break;
             case Instruction.DEC:
-                // TODO: Write result?
+            {
                 var result = _alu.Decrement(operand);
                 _cycles++;
                 _bus[address] = result;
                 _cycles++;
                 break;
+            }
             case Instruction.DEX:
                 _alu.DecrementX();
                 break;
@@ -259,9 +260,13 @@ public class Processor : IProcessor
                 _alu.ExclusiveOr(operand);
                 break;
             case Instruction.INC:
-                // TODO: Write result!
-                _alu.Increment(operand);
+            {
+                var result = _alu.Increment(operand);
+                _cycles++;
+                _bus[address] = result;
+                _cycles++;
                 break;
+            }
             case Instruction.INX:
                 _alu.IncrementX();
                 break;

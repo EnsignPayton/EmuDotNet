@@ -515,7 +515,7 @@ public class ProcessorTests
         Assert.False(target.Registers.N);
     }
 
-    [Fact(Skip = "TODO: Store")]
+    [Fact]
     public void INC_ZPG()
     {
         var target = GetTarget();

@@ -7,6 +7,10 @@
     <ImplicitUsings>true</ImplicitUsings>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\EmuDotNet.Core\EmuDotNet.Core.csproj" />
   </ItemGroup>
