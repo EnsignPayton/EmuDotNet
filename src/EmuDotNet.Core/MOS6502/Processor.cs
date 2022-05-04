@@ -282,6 +282,9 @@ public class Processor : IProcessor
                 break;
             case Instruction.JSR:
                 // TODO: Address; Stack
+                Push(_reg.PC);
+                _reg.PC = address;
+                _cycles += 2;
                 break;
             case Instruction.LDA:
                 _reg.A = operand;
@@ -406,18 +409,26 @@ public class Processor : IProcessor
 
     private void Break()
     {
-        _bus[(ushort) (0x0100 + _reg.SP)] = (byte) (_reg.PC & 0xFF);
-        _reg.SP--;
-        _bus[(ushort) (0x0100 + _reg.SP)] = (byte) ((_reg.PC >> 8) & 0xFF);
-        _reg.SP--;
+        Push(_reg.PC);
         // TODO: Status Register
-        _bus[(ushort) (0x0100 + _reg.SP)] = 0x00;
-        _reg.SP--;
+        Push(0);
 
         var low = _bus[0xFFFE];
         var high = _bus[0xFFFF];
         var address = (ushort) ((high << 8) + low);
         _reg.PC = address;
         _cycles += 5;
+    }
+
+    private void Push(byte value)
+    {
+        _bus[(ushort) (0x0100 + _reg.SP)] = value;
+        _reg.SP--;
+    }
+
+    private void Push(ushort value)
+    {
+        Push((byte) (value & 0xFF));
+        Push((byte) ((value >> 8) & 0xFF));
     }
 }

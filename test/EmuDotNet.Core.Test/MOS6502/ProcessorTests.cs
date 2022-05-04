@@ -337,7 +337,6 @@ public class ProcessorTests
     public void BRK_IMP()
     {
         var target = GetTarget();
-        target.Registers.SP = 0xFF;
         target.Bus[0x8000] = 0x00;
         target.Bus[0xFFFE] = 0x34;
         target.Bus[0xFFFF] = 0x12;
@@ -569,7 +568,7 @@ public class ProcessorTests
         Assert.Equal(0x1234, target.Registers.PC);
     }
 
-    [Fact(Skip = "TODO: Stack")]
+    [Fact]
     public void JSR_ABS()
     {
         var target = GetTarget();
@@ -579,7 +578,7 @@ public class ProcessorTests
 
         ExecuteCycles(target, 6);
 
-        // TODO: Test stack
+        Assert.Equal(0xFD, target.Registers.SP);
         Assert.Equal(0x1234, target.Registers.PC);
     }
 
@@ -959,6 +958,7 @@ public class ProcessorTests
     private static Processor GetTarget()
     {
         var target = new Processor(new SimpleBus());
+        target.Registers.SP = 0xFF;
         target.Registers.PC = 0x8000;
         return target;
     }
