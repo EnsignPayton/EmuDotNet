@@ -333,15 +333,19 @@ public class ProcessorTests
         Assert.Equal(0x8006, target.Registers.PC);
     }
 
-    [Fact(Skip = "TODO: Stack")]
+    [Fact]
     public void BRK_IMP()
     {
         var target = GetTarget();
+        target.Registers.SP = 0xFF;
         target.Bus[0x8000] = 0x00;
+        target.Bus[0xFFFE] = 0x34;
+        target.Bus[0xFFFF] = 0x12;
 
         ExecuteCycles(target, 7);
 
-        Assert.Equal(0xFFFE, target.Registers.PC);
+        Assert.Equal(0xFC, target.Registers.SP);
+        Assert.Equal(0x1234, target.Registers.PC);
     }
 
     [Fact]

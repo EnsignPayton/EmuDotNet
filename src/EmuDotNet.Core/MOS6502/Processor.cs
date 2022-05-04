@@ -214,7 +214,9 @@ public class Processor : IProcessor
             case Instruction.BPL:
                 BranchIfPositive(operand);
                 break;
-            // TODO: BRK
+            case Instruction.BRK:
+                Break();
+                break;
             case Instruction.BVC:
                 BranchIfOverflowClear(operand);
                 break;
@@ -400,5 +402,22 @@ public class Processor : IProcessor
         var mod = offset + (_reg.PC & 0xFF);
         if (mod is < 0 or > 256) _cycles++;
         _reg.PC = (ushort) (_reg.PC + offset);
+    }
+
+    private void Break()
+    {
+        _bus[(ushort) (0x0100 + _reg.SP)] = (byte) (_reg.PC & 0xFF);
+        _reg.SP--;
+        _bus[(ushort) (0x0100 + _reg.SP)] = (byte) ((_reg.PC >> 8) & 0xFF);
+        _reg.SP--;
+        // TODO: Status Register
+        _bus[(ushort) (0x0100 + _reg.SP)] = 0x00;
+        _reg.SP--;
+
+        var low = _bus[0xFFFE];
+        var high = _bus[0xFFFF];
+        var address = (ushort) ((high << 8) + low);
+        _reg.PC = address;
+        _cycles += 5;
     }
 }
