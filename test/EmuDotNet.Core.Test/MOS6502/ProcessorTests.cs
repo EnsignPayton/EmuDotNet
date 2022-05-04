@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace EmuDotNet.Core.MOS6502;
+﻿namespace EmuDotNet.Core.MOS6502;
 
 public class ProcessorTests
 {
@@ -249,7 +247,7 @@ public class ProcessorTests
         const sbyte offset = -16;
         var target = GetTarget();
         target.Bus[0x8000] = 0x90;
-        target.Bus[0x8001] = Cast(offset);
+        target.Bus[0x8001] = offset.ToByte();
 
         ExecuteCycles(target, 4);
 
@@ -960,10 +958,4 @@ public class ProcessorTests
         target.Registers.PC = 0x8000;
         return target;
     }
-
-    private static byte Cast(sbyte value) =>
-        MemoryMarshal.Cast<sbyte, byte>(stackalloc sbyte[] {value})[0];
-
-    private static sbyte Cast(byte value) =>
-        MemoryMarshal.Cast<byte, sbyte>(stackalloc byte[] {value})[0];
 }

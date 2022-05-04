@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace EmuDotNet.Core.MOS6502;
+﻿namespace EmuDotNet.Core.MOS6502;
 
 public class ALUTests
 {
@@ -28,9 +26,9 @@ public class ALUTests
     public void ADC_Adds_SBytes(sbyte a, sbyte m, sbyte expected)
     {
         var target = GetTarget();
-        target.Registers.A = Cast(a);
-        target.AddWithCarry(Cast(m));
-        Assert.Equal(expected, Cast(target.Registers.A));
+        target.Registers.A = a.ToByte();
+        target.AddWithCarry(m.ToByte());
+        Assert.Equal(expected, target.Registers.A.ToSByte());
     }
 
     [Fact]
@@ -66,8 +64,8 @@ public class ALUTests
         const sbyte a = 127;
         const sbyte m = 127;
         var target = GetTarget();
-        target.Registers.A = Cast(a);
-        target.AddWithCarry(Cast(m));
+        target.Registers.A = a.ToByte();
+        target.AddWithCarry(m.ToByte());
         Assert.True(target.Registers.V);
     }
 
@@ -77,8 +75,8 @@ public class ALUTests
         const sbyte a = -50;
         const sbyte m = -50;
         var target = GetTarget();
-        target.Registers.A = Cast(a);
-        target.AddWithCarry(Cast(m));
+        target.Registers.A = a.ToByte();
+        target.AddWithCarry(m.ToByte());
         Assert.True(target.Registers.N);
     }
 
@@ -351,7 +349,7 @@ public class ALUTests
         var value = (sbyte)iValue;
         var expected = (sbyte)iExpected;
         var target = GetTarget();
-        var result = Cast(target.Decrement(Cast(value)));
+        var result = target.Decrement(value.ToByte()).ToSByte();
         Assert.Equal(expected, result);
     }
 
@@ -368,7 +366,7 @@ public class ALUTests
     {
         const sbyte m = -25;
         var target = GetTarget();
-        target.Decrement(Cast(m));
+        target.Decrement(m.ToByte());
         Assert.True(target.Registers.N);
     }
 
@@ -399,9 +397,9 @@ public class ALUTests
         var value = (sbyte)iValue;
         var expected = (sbyte)iExpected;
         var target = GetTarget();
-        target.Registers.X = Cast(value);
+        target.Registers.X = value.ToByte();
         target.DecrementX();
-        var result = Cast(target.Registers.X);
+        var result = target.Registers.X.ToSByte();
         Assert.Equal(expected, result);
     }
 
@@ -419,7 +417,7 @@ public class ALUTests
     {
         const sbyte m = -25;
         var target = GetTarget();
-        target.Registers.X = Cast(m);
+        target.Registers.X = m.ToByte();
         target.DecrementX();
         Assert.True(target.Registers.N);
     }
@@ -451,9 +449,9 @@ public class ALUTests
         var value = (sbyte)iValue;
         var expected = (sbyte)iExpected;
         var target = GetTarget();
-        target.Registers.Y = Cast(value);
+        target.Registers.Y = value.ToByte();
         target.DecrementY();
-        var result = Cast(target.Registers.Y);
+        var result = target.Registers.Y.ToSByte();
         Assert.Equal(expected, result);
     }
 
@@ -471,7 +469,7 @@ public class ALUTests
     {
         const sbyte m = -25;
         var target = GetTarget();
-        target.Registers.Y = Cast(m);
+        target.Registers.Y = m.ToByte();
         target.DecrementY();
         Assert.True(target.Registers.N);
     }
@@ -533,7 +531,7 @@ public class ALUTests
         var value = (sbyte)iValue;
         var expected = (sbyte)iExpected;
         var target = GetTarget();
-        var result = Cast(target.Increment(Cast(value)));
+        var result = target.Increment(value.ToByte()).ToSByte();
         Assert.Equal(expected, result);
     }
 
@@ -550,7 +548,7 @@ public class ALUTests
     {
         const sbyte m = -25;
         var target = GetTarget();
-        target.Increment(Cast(m));
+        target.Increment(m.ToByte());
         Assert.True(target.Registers.N);
     }
 
@@ -581,9 +579,9 @@ public class ALUTests
         var value = (sbyte)iValue;
         var expected = (sbyte)iExpected;
         var target = GetTarget();
-        target.Registers.X = Cast(value);
+        target.Registers.X = value.ToByte();
         target.IncrementX();
-        var result = Cast(target.Registers.X);
+        var result = target.Registers.X.ToSByte();
         Assert.Equal(expected, result);
     }
 
@@ -601,7 +599,7 @@ public class ALUTests
     {
         const sbyte m = -25;
         var target = GetTarget();
-        target.Registers.X = Cast(m);
+        target.Registers.X = m.ToByte();
         target.IncrementX();
         Assert.True(target.Registers.N);
     }
@@ -633,9 +631,9 @@ public class ALUTests
         var value = (sbyte)iValue;
         var expected = (sbyte)iExpected;
         var target = GetTarget();
-        target.Registers.Y = Cast(value);
+        target.Registers.Y = value.ToByte();
         target.IncrementY();
-        var result = Cast(target.Registers.Y);
+        var result = target.Registers.Y.ToSByte();
         Assert.Equal(expected, result);
     }
 
@@ -653,7 +651,7 @@ public class ALUTests
     {
         const sbyte m = -25;
         var target = GetTarget();
-        target.Registers.Y = Cast(m);
+        target.Registers.Y = m.ToByte();
         target.IncrementY();
         Assert.True(target.Registers.N);
     }
@@ -934,10 +932,10 @@ public class ALUTests
     public void SBC_Subtracts_SBytes(sbyte a, sbyte m, sbyte expected)
     {
         var target = GetTarget();
-        target.Registers.A = Cast(a);
+        target.Registers.A = a.ToByte();
         target.Registers.C = true;
-        target.SubtractWithCarry(Cast(m));
-        Assert.Equal(expected, Cast(target.Registers.A));
+        target.SubtractWithCarry(m.ToByte());
+        Assert.Equal(expected, target.Registers.A.ToSByte());
     }
 
     [Fact]
@@ -975,8 +973,8 @@ public class ALUTests
         const sbyte a = 127;
         const sbyte m = 127;
         var target = GetTarget();
-        target.Registers.A = Cast(a);
-        target.AddWithCarry(Cast(m));
+        target.Registers.A = a.ToByte();
+        target.AddWithCarry(m.ToByte());
         Assert.True(target.Registers.V);
     }
 
@@ -1164,10 +1162,6 @@ public class ALUTests
     #endregion
 
     private static ALU GetTarget() => new(new Registers());
-
-    private static byte Cast(sbyte value) =>
-        MemoryMarshal.Cast<sbyte, byte>(stackalloc sbyte[] {value})[0];
-
-    private static sbyte Cast(byte value) =>
-        MemoryMarshal.Cast<byte, sbyte>(stackalloc byte[] {value})[0];
+    // private static byte Cast(sbyte value) => value.ToByte();
+    // private static sbyte Cast(byte value) => value.ToSByte();
 }

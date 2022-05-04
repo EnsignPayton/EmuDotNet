@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using EmuDotNet.Core.Abstractions;
+﻿using EmuDotNet.Core.Abstractions;
 
 namespace EmuDotNet.Core.MOS6502;
 
@@ -391,16 +390,10 @@ public class Processor : IProcessor
 
     private void BranchWithOffset(byte value)
     {
-        var offset = Cast(value);
+        var offset = value.ToSByte();
         _cycles++;
         var mod = offset + (_reg.PC & 0xFF);
         if (mod is < 0 or > 256) _cycles++;
         _reg.PC = (ushort) (_reg.PC + offset);
     }
-
-    private static byte Cast(sbyte value) =>
-        MemoryMarshal.Cast<sbyte, byte>(stackalloc sbyte[] {value})[0];
-
-    private static sbyte Cast(byte value) =>
-        MemoryMarshal.Cast<byte, sbyte>(stackalloc byte[] {value})[0];
 }
