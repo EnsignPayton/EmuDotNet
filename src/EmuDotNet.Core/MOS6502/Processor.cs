@@ -245,7 +245,10 @@ public class Processor : IProcessor
                 break;
             case Instruction.DEC:
                 // TODO: Write result?
-                _alu.Decrement(operand);
+                var result = _alu.Decrement(operand);
+                _cycles++;
+                _bus[address] = result;
+                _cycles++;
                 break;
             case Instruction.DEX:
                 _alu.DecrementX();

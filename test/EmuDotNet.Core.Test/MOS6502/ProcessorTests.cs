@@ -461,7 +461,7 @@ public class ProcessorTests
         Assert.False(target.Registers.N);
     }
 
-    [Fact(Skip = "TODO: Store")]
+    [Fact]
     public void DEC_ZPG()
     {
         var target = GetTarget();
@@ -567,7 +567,7 @@ public class ProcessorTests
         Assert.Equal(0x1234, target.Registers.PC);
     }
 
-    [Fact(Skip = "TODO: Address as operand; Stack")]
+    [Fact(Skip = "TODO: Stack")]
     public void JSR_ABS()
     {
         var target = GetTarget();
@@ -941,15 +941,17 @@ public class ProcessorTests
 
     private static void ExecuteCycles(Processor target, int cycles)
     {
-        target.ExecuteClock();
-
-        for (int i = 1; i < cycles; i++)
+        const int maxCycles = 20;
+        int currCycles = 0;
+        do
         {
-            Assert.True(target.IsExecuting);
             target.ExecuteClock();
-        }
+            currCycles++;
+            if (!target.IsExecuting) break;
+        } while (currCycles < maxCycles);
 
-        Assert.False(target.IsExecuting);
+        if (currCycles != cycles)
+            throw new Xunit.Sdk.XunitException($"Expected {cycles} cycles, took {currCycles} cycles");
     }
 
     private static Processor GetTarget()
