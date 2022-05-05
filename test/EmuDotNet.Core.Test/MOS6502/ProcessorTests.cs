@@ -776,26 +776,36 @@ public class ProcessorTests
         Assert.Equal(0x52, target.Bus[0x0010]);
     }
 
-    [Fact(Skip = "TODO: Stack")]
+    [Fact]
     public void RTI_IMP()
     {
         var target = GetTarget();
+        target.Registers.SP = 0xFD;
+        target.Bus[0x01FD] = 0xB5;
+        target.Bus[0x01FE] = 0x12;
+        target.Bus[0x01FF] = 0x34;
         target.Bus[0x8000] = 0x40;
 
         ExecuteCycles(target, 6);
 
-        // TODO: Test Stack
+        Assert.Equal(0x1234, target.Registers.PC);
+        Assert.True(target.Registers.C);
+        Assert.True(target.Registers.I);
+        Assert.True(target.Registers.N);
     }
 
-    [Fact(Skip = "TODO: Stack")]
+    [Fact]
     public void RTS_IMP()
     {
         var target = GetTarget();
+        target.Registers.SP = 0xFE;
+        target.Bus[0x01FE] = 0x12;
+        target.Bus[0x01FF] = 0x34;
         target.Bus[0x8000] = 0x60;
 
         ExecuteCycles(target, 6);
 
-        // TODO: Test Stack
+        Assert.Equal(0x1233, target.Registers.PC);
     }
 
     [Fact]
@@ -845,7 +855,7 @@ public class ProcessorTests
         Assert.True(target.Registers.I);
     }
 
-    [Fact(Skip = "TODO: Store")]
+    [Fact]
     public void STA_ZPG()
     {
         var target = GetTarget();
@@ -858,7 +868,7 @@ public class ProcessorTests
         Assert.Equal(0xA5, target.Bus[0x0010]);
     }
 
-    [Fact(Skip = "TODO: Store")]
+    [Fact]
     public void STX_ZPG()
     {
         var target = GetTarget();
@@ -871,7 +881,7 @@ public class ProcessorTests
         Assert.Equal(0xA5, target.Bus[0x0010]);
     }
 
-    [Fact(Skip = "TODO: Store")]
+    [Fact]
     public void STY_ZPG()
     {
         var target = GetTarget();

@@ -355,6 +355,20 @@ public class Processor : IProcessor
                     _cycles += 2;
                 }
                 break;
+            case Instruction.RTI:
+            {
+                _reg.P = PullByte();
+                _reg.PC = PullUShort();
+                _cycles += 4;
+                break;
+            }
+            case Instruction.RTS:
+            {
+                _reg.PC = PullUShort();
+                _reg.PC--;
+                _cycles += 4;
+                break;
+            }
             case Instruction.SBC:
                 _alu.SubtractWithCarry(operand);
                 break;
@@ -368,8 +382,20 @@ public class Processor : IProcessor
                 _alu.SetInterruptDisable();
                 break;
             case Instruction.STA:
-                // TODO: This
+            {
+                _bus[address] = _reg.A;
                 break;
+            }
+            case Instruction.STX:
+            {
+                _bus[address] = _reg.X;
+                break;
+            }
+            case Instruction.STY:
+            {
+                _bus[address] = _reg.Y;
+                break;
+            }
             case Instruction.TAX:
                 _alu.TransferAtoX();
                 break;
@@ -480,5 +506,12 @@ public class Processor : IProcessor
         var value = _bus[(ushort) (0x0100 + _reg.SP)];
         _reg.SP++;
         return value;
+    }
+
+    private ushort PullUShort()
+    {
+        var high = PullByte();
+        var low = PullByte();
+        return (ushort) ((high << 8) + low);
     }
 }
