@@ -738,7 +738,7 @@ public class ProcessorTests
         Assert.Equal(0x4A, target.Registers.A);
     }
 
-    [Fact(Skip = "TODO: Store")]
+    [Fact]
     public void ROL_ZPG()
     {
         var target = GetTarget();
@@ -763,7 +763,7 @@ public class ProcessorTests
         Assert.Equal(0x52, target.Registers.A);
     }
 
-    [Fact(Skip = "TODO: Store")]
+    [Fact]
     public void ROR_ZPG()
     {
         var target = GetTarget();

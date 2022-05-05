@@ -330,12 +330,30 @@ public class Processor : IProcessor
                 _cycles += 2;
                 break;
             case Instruction.ROL:
-                // TODO: The memory one
-                _reg.A = _alu.RotateLeft(_reg.A);
+                // TODO: Detect this better
+                if (address == 0xFFFF)
+                {
+                    _reg.A = _alu.RotateLeft(_reg.A);
+                }
+                else
+                {
+                    var result = _alu.RotateLeft(operand);
+                    _bus[address] = result;
+                    _cycles += 2;
+                }
                 break;
             case Instruction.ROR:
-                // TODO: The memory one
-                _reg.A = _alu.RotateRight(_reg.A);
+                // TODO: Detect this better
+                if (address == 0xFFFF)
+                {
+                    _reg.A = _alu.RotateRight(_reg.A);
+                }
+                else
+                {
+                    var result = _alu.RotateRight(operand);
+                    _bus[address] = result;
+                    _cycles += 2;
+                }
                 break;
             case Instruction.SBC:
                 _alu.SubtractWithCarry(operand);
