@@ -682,12 +682,15 @@ public class ProcessorTests
     public void PHP_IMP()
     {
         var target = GetTarget();
+        target.Registers.C = true;
+        target.Registers.I = true;
+        target.Registers.N = true;
         target.Bus[0x8000] = 0x08;
 
         ExecuteCycles(target, 3);
 
         Assert.Equal(0xFE, target.Registers.SP);
-        // TODO: Test status reg
+        Assert.Equal(0xB5, target.Bus[0x01FF]);
     }
 
     [Fact]
@@ -709,12 +712,18 @@ public class ProcessorTests
     {
         var target = GetTarget();
         target.Registers.SP = 0xFE;
+        target.Bus[0x01FE] = 0xA5;
         target.Bus[0x8000] = 0x28;
 
         ExecuteCycles(target, 4);
 
         Assert.Equal(0xFF, target.Registers.SP);
-        // TODO: Test Status reg
+        Assert.True(target.Registers.C);
+        Assert.False(target.Registers.Z);
+        Assert.True(target.Registers.I);
+        Assert.False(target.Registers.D);
+        Assert.False(target.Registers.V);
+        Assert.True(target.Registers.N);
     }
 
     [Fact]

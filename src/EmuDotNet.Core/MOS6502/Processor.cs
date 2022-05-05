@@ -317,8 +317,8 @@ public class Processor : IProcessor
                 _cycles++;
                 break;
             case Instruction.PHP:
-                // TODO: Status reg
-                Push(0);
+                _reg.B = true;
+                Push(_reg.P);
                 _cycles++;
                 break;
             case Instruction.PLA:
@@ -326,8 +326,7 @@ public class Processor : IProcessor
                 _cycles += 2;
                 break;
             case Instruction.PLP:
-                // TODO: Status reg
-                PullByte();
+                _reg.P = PullByte();
                 _cycles += 2;
                 break;
             case Instruction.ROL:
@@ -436,8 +435,8 @@ public class Processor : IProcessor
     private void Break()
     {
         Push(_reg.PC);
-        // TODO: Status Register
-        Push(0);
+        _reg.B = true;
+        Push(_reg.P);
 
         var low = _bus[0xFFFE];
         var high = _bus[0xFFFF];
