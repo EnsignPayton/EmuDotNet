@@ -52,10 +52,23 @@ public class Processor : IProcessor
         throw new NotImplementedException();
     }
 
-    private byte ReadOperand(AddressMode mode, out ushort outAddress)
+    private byte ReadImmediateByte()
     {
-        // Default
-        outAddress = 0xFFFF;
+        var val = _bus[_reg.PC];
+        _reg.PC++;
+        return val;
+    }
+
+    private ushort ReadImmediateUShort()
+    {
+        var low = ReadImmediateByte();
+        var high = ReadImmediateByte();
+        return (ushort) ((high << 8) + low);
+    }
+
+    private byte ReadOperand(AddressMode mode, out ushort? outAddress)
+    {
+        outAddress = null;
         switch (mode)
         {
             case AddressMode.IMP:
@@ -65,15 +78,13 @@ public class Processor : IProcessor
             }
             case AddressMode.IMM:
             {
-                var val = _bus[_reg.PC];
-                _reg.PC++;
+                var val = ReadImmediateByte();
                 _cycles++;
                 return val;
             }
             case AddressMode.ZPG:
             {
-                var address = _bus[_reg.PC];
-                _reg.PC++;
+                var address = ReadImmediateByte();
                 _cycles++;
                 var val = _bus[address];
                 _cycles++;
@@ -82,8 +93,7 @@ public class Processor : IProcessor
             }
             case AddressMode.ZPX:
             {
-                var addressBase = _bus[_reg.PC];
-                _reg.PC++;
+                var addressBase = ReadImmediateByte();
                 _cycles++;
                 var offset = _reg.X;
                 var address = (byte)((addressBase + offset) & 0xFF);
@@ -94,13 +104,9 @@ public class Processor : IProcessor
             }
             case AddressMode.ABS:
             {
-                var low = _bus[_reg.PC];
-                _reg.PC++;
                 _cycles++;
-                var high = _bus[_reg.PC];
-                _reg.PC++;
                 _cycles++;
-                var address = (ushort) ((high << 8) + low);
+                var address = ReadImmediateUShort();
                 var val = _bus[address];
                 _cycles++;
                 outAddress = address;
@@ -108,38 +114,29 @@ public class Processor : IProcessor
             }
             case AddressMode.ABX:
             {
-                var low = _bus[_reg.PC];
-                _reg.PC++;
                 _cycles++;
-                var high = _bus[_reg.PC];
-                _reg.PC++;
                 _cycles++;
-                var addressBase = (ushort) ((high << 8) + low);
+                var addressBase = ReadImmediateUShort();
                 var address = (ushort) (addressBase + _reg.X);
-                if (low + _reg.X > 256) _cycles++;
+                if ((addressBase & 0xFF) + _reg.X > 256) _cycles++;
                 var val = _bus[address];
                 _cycles++;
                 return val;
             }
             case AddressMode.ABY:
             {
-                var low = _bus[_reg.PC];
-                _reg.PC++;
                 _cycles++;
-                var high = _bus[_reg.PC];
-                _reg.PC++;
                 _cycles++;
-                var addressBase = (ushort) ((high << 8) + low);
+                var addressBase = ReadImmediateUShort();
                 var address = (ushort) (addressBase + _reg.Y);
-                if (low + _reg.Y > 256) _cycles++;
+                if ((addressBase & 0xFF) + _reg.Y > 256) _cycles++;
                 var val = _bus[address];
                 _cycles++;
                 return val;
             }
             case AddressMode.INX:
             {
-                var zAddressBase = _bus[_reg.PC];
-                _reg.PC++;
+                var zAddressBase = ReadImmediateByte();
                 _cycles++;
                 var zAddress = (ushort) ((zAddressBase + _reg.X) & 0xFF);
                 var low = _bus[zAddress];
@@ -154,8 +151,7 @@ public class Processor : IProcessor
             }
             case AddressMode.INY:
             {
-                var zAddress = _bus[_reg.PC];
-                _reg.PC++;
+                var zAddress = ReadImmediateByte();
                 _cycles++;
                 var addressBaseLow = _bus[zAddress];
                 _cycles++;
@@ -170,8 +166,7 @@ public class Processor : IProcessor
             }
             case AddressMode.REL:
             {
-                var offset = _bus[_reg.PC];
-                _reg.PC++;
+                var offset = ReadImmediateByte();
                 _cycles++;
                 return offset;
             }
@@ -180,7 +175,7 @@ public class Processor : IProcessor
         }
     }
 
-    private void Execute(Instruction instruction, byte operand, ushort address)
+    private void Execute(Instruction instruction, byte operand, ushort? address)
     {
         switch (instruction)
         {
@@ -191,7 +186,15 @@ public class Processor : IProcessor
                 _alu.LogicalAnd(operand);
                 break;
             case Instruction.ASL:
-                _reg.A = _alu.ArithmeticShiftLeft(_reg.A);
+                if (address.HasValue)
+                {
+                    _bus[address.Value] = _alu.ArithmeticShiftLeft(operand);
+                    _cycles += 2;
+                }
+                else
+                {
+                    _reg.A = _alu.ArithmeticShiftLeft(_reg.A);
+                }
                 break;
             case Instruction.BCC:
                 BranchIfCarryClear(operand);
@@ -248,7 +251,7 @@ public class Processor : IProcessor
             {
                 var result = _alu.Decrement(operand);
                 _cycles++;
-                _bus[address] = result;
+                _bus[address!.Value] = result;
                 _cycles++;
                 break;
             }
@@ -265,7 +268,7 @@ public class Processor : IProcessor
             {
                 var result = _alu.Increment(operand);
                 _cycles++;
-                _bus[address] = result;
+                _bus[address!.Value] = result;
                 _cycles++;
                 break;
             }
@@ -276,13 +279,13 @@ public class Processor : IProcessor
                 _alu.IncrementY();
                 break;
             case Instruction.JMP:
-                _reg.PC = address;
+                _reg.PC = address!.Value;
                 // Didn't actually need to read the address - so don't maybe?
                 _cycles--;
                 break;
             case Instruction.JSR:
                 Push(_reg.PC);
-                _reg.PC = address;
+                _reg.PC = address!.Value;
                 _cycles += 2;
                 break;
             case Instruction.LDA:
@@ -295,16 +298,15 @@ public class Processor : IProcessor
                 _reg.Y = operand;
                 break;
             case Instruction.LSR:
-                // TODO: Detect this better
-                if (address == 0xFFFF)
+                if (address.HasValue)
                 {
-                    _reg.A = _alu.LogicalShiftRight(operand);
+                    var result = _alu.LogicalShiftRight(operand);
+                    _bus[address.Value] = result;
+                    _cycles += 2;
                 }
                 else
                 {
-                    var result = _alu.LogicalShiftRight(operand);
-                    _bus[address] = result;
-                    _cycles += 2;
+                    _reg.A = _alu.LogicalShiftRight(operand);
                 }
                 break;
             case Instruction.NOP:
@@ -330,29 +332,27 @@ public class Processor : IProcessor
                 _cycles += 2;
                 break;
             case Instruction.ROL:
-                // TODO: Detect this better
-                if (address == 0xFFFF)
+                if (address.HasValue)
+                {
+                    var result = _alu.RotateLeft(operand);
+                    _bus[address.Value] = result;
+                    _cycles += 2;
+                }
+                else
                 {
                     _reg.A = _alu.RotateLeft(_reg.A);
                 }
-                else
-                {
-                    var result = _alu.RotateLeft(operand);
-                    _bus[address] = result;
-                    _cycles += 2;
-                }
                 break;
             case Instruction.ROR:
-                // TODO: Detect this better
-                if (address == 0xFFFF)
+                if (address.HasValue)
                 {
-                    _reg.A = _alu.RotateRight(_reg.A);
+                    var result = _alu.RotateRight(operand);
+                    _bus[address.Value] = result;
+                    _cycles += 2;
                 }
                 else
                 {
-                    var result = _alu.RotateRight(operand);
-                    _bus[address] = result;
-                    _cycles += 2;
+                    _reg.A = _alu.RotateRight(_reg.A);
                 }
                 break;
             case Instruction.RTI:
@@ -383,17 +383,17 @@ public class Processor : IProcessor
                 break;
             case Instruction.STA:
             {
-                _bus[address] = _reg.A;
+                _bus[address!.Value] = _reg.A;
                 break;
             }
             case Instruction.STX:
             {
-                _bus[address] = _reg.X;
+                _bus[address!.Value] = _reg.X;
                 break;
             }
             case Instruction.STY:
             {
-                _bus[address] = _reg.Y;
+                _bus[address!.Value] = _reg.Y;
                 break;
             }
             case Instruction.TAX:

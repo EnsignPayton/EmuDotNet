@@ -354,6 +354,8 @@ public class ProcessorTests
 
     #endregion
 
+    #region ASL
+
     [Fact]
     public void ASL_IMP()
     {
@@ -365,6 +367,49 @@ public class ProcessorTests
 
         Assert.Equal(0x4A, target.Registers.A);
     }
+
+    [Fact]
+    public void ASL_ZPG()
+    {
+        var target = GetTarget();
+        target.Bus[0x0010] = 0xA5;
+        target.Bus[0x8000] = 0x06;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 5);
+
+        Assert.Equal(0x4A, target.Bus[0x0010]);
+    }
+
+    [Fact(Skip = "TODO: Make this work")]
+    public void ASL_ZPX()
+    {
+        var target = GetTarget();
+        target.Registers.X = 0x04;
+        target.Bus[0x0014] = 0xA5;
+        target.Bus[0x8000] = 0x16;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 6);
+
+        Assert.Equal(0x4A, target.Bus[0x0014]);
+    }
+
+    [Fact]
+    public void ASL_ABS()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0x0E;
+    }
+
+    [Fact]
+    public void ASL_ABX()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0x1E;
+    }
+
+    #endregion
 
     [Fact]
     public void BCC_REL_NoBranch()
