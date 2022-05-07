@@ -178,6 +178,8 @@ public class ProcessorTests
 
     #endregion
 
+    #region AND
+
     [Fact]
     public void AND_IMM()
     {
@@ -190,6 +192,167 @@ public class ProcessorTests
 
         Assert.Equal(0x05, target.Registers.A);
     }
+
+    [Fact]
+    public void AND_ZPG()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Bus[0x0010] = 0x0F;
+        target.Bus[0x8000] = 0x25;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 3);
+
+        Assert.Equal(0x05, target.Registers.A);
+    }
+
+    [Fact]
+    public void AND_ZPX()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Registers.X = 0x04;
+        target.Bus[0x0014] = 0x0F;
+        target.Bus[0x8000] = 0x35;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0x05, target.Registers.A);
+    }
+
+    [Fact]
+    public void AND_ABS()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Bus[0x1234] = 0x0F;
+        target.Bus[0x8000] = 0x2D;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0x05, target.Registers.A);
+    }
+
+    [Fact]
+    public void AND_ABX()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Registers.X = 0x04;
+        target.Bus[0x1238] = 0x0F;
+        target.Bus[0x8000] = 0x3D;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0x05, target.Registers.A);
+    }
+
+    [Fact]
+    public void AND_ABX_PageCross()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Registers.X = 0x04;
+        target.Bus[0x1203] = 0x0F;
+        target.Bus[0x8000] = 0x3D;
+        target.Bus[0x8001] = 0xFF;
+        target.Bus[0x8002] = 0x11;
+
+        ExecuteCycles(target, 5);
+
+        Assert.Equal(0x05, target.Registers.A);
+    }
+
+    [Fact]
+    public void AND_ABY()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Registers.Y = 0x04;
+        target.Bus[0x1238] = 0x0F;
+        target.Bus[0x8000] = 0x39;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0x05, target.Registers.A);
+    }
+
+    [Fact]
+    public void AND_ABY_PageCross()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Registers.Y = 0x04;
+        target.Bus[0x1203] = 0x0F;
+        target.Bus[0x8000] = 0x39;
+        target.Bus[0x8001] = 0xFF;
+        target.Bus[0x8002] = 0x11;
+
+        ExecuteCycles(target, 5);
+
+        Assert.Equal(0x05, target.Registers.A);
+    }
+
+    [Fact]
+    public void AND_INX()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Registers.X = 0x04;
+        target.Bus[0x0014] = 0x34;
+        target.Bus[0x0015] = 0x12;
+        target.Bus[0x1234] = 0x0F;
+        target.Bus[0x8000] = 0x21;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 6);
+
+        Assert.Equal(0x05, target.Registers.A);
+    }
+
+    [Fact]
+    public void AND_INY()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Registers.Y = 0x04;
+        target.Bus[0x0010] = 0x34;
+        target.Bus[0x0011] = 0x12;
+        target.Bus[0x1238] = 0x0F;
+        target.Bus[0x8000] = 0x31;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 5);
+
+        Assert.Equal(0x05, target.Registers.A);
+    }
+
+    [Fact]
+    public void AND_INY_PageCross()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Registers.Y = 0x04;
+        target.Bus[0x0010] = 0xFF;
+        target.Bus[0x0011] = 0x11;
+        target.Bus[0x1203] = 0x0F;
+        target.Bus[0x8000] = 0x31;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 6);
+
+        Assert.Equal(0x05, target.Registers.A);
+    }
+
+    #endregion
 
     [Fact]
     public void ASL_IMP()
