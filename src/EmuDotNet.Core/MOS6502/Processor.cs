@@ -24,8 +24,7 @@ public class Processor : IProcessor
     {
         if (!IsExecuting)
         {
-            var val = _bus[_reg.PC];
-            _reg.PC++;
+            var val = ReadImmediateByte();
             _cycles++;
 
             var (instruction, mode) = OpcodeParser.Parse(val);
@@ -54,15 +53,20 @@ public class Processor : IProcessor
 
     private byte ReadImmediateByte()
     {
-        var val = _bus[_reg.PC];
-        _reg.PC++;
-        return val;
+        return _bus[_reg.PC++];
     }
 
     private ushort ReadImmediateUShort()
     {
         var low = ReadImmediateByte();
         var high = ReadImmediateByte();
+        return (ushort) ((high << 8) + low);
+    }
+
+    private ushort ReadUShort(ushort address)
+    {
+        var low = _bus[address];
+        var high = _bus[(ushort) (address + 1)];
         return (ushort) ((high << 8) + low);
     }
 
@@ -78,97 +82,67 @@ public class Processor : IProcessor
             }
             case AddressMode.IMM:
             {
-                var val = ReadImmediateByte();
                 _cycles++;
-                return val;
+                return ReadImmediateByte();
             }
             case AddressMode.ZPG:
             {
+                _cycles += 2;
                 var address = ReadImmediateByte();
-                _cycles++;
-                var val = _bus[address];
-                _cycles++;
                 outAddress = address;
-                return val;
+                return _bus[address];
             }
             case AddressMode.ZPX:
             {
+                _cycles += 3;
                 var addressBase = ReadImmediateByte();
-                _cycles++;
-                var offset = _reg.X;
-                var address = (byte)((addressBase + offset) & 0xFF);
-                _cycles++;
-                var val = _bus[address];
-                _cycles++;
-                return val;
+                var address = (byte)((addressBase + _reg.X) & 0xFF);
+                return _bus[address];
             }
             case AddressMode.ABS:
             {
-                _cycles++;
-                _cycles++;
+                _cycles += 3;
                 var address = ReadImmediateUShort();
-                var val = _bus[address];
-                _cycles++;
                 outAddress = address;
-                return val;
+                return _bus[address];
             }
             case AddressMode.ABX:
             {
-                _cycles++;
-                _cycles++;
+                _cycles += 3;
                 var addressBase = ReadImmediateUShort();
                 var address = (ushort) (addressBase + _reg.X);
                 if ((addressBase & 0xFF) + _reg.X > 256) _cycles++;
-                var val = _bus[address];
-                _cycles++;
-                return val;
+                return _bus[address];
             }
             case AddressMode.ABY:
             {
-                _cycles++;
-                _cycles++;
+                _cycles += 3;
                 var addressBase = ReadImmediateUShort();
                 var address = (ushort) (addressBase + _reg.Y);
                 if ((addressBase & 0xFF) + _reg.Y > 256) _cycles++;
-                var val = _bus[address];
-                _cycles++;
-                return val;
+                return _bus[address];
             }
             case AddressMode.INX:
             {
+                _cycles += 5;
                 var zAddressBase = ReadImmediateByte();
-                _cycles++;
                 var zAddress = (ushort) ((zAddressBase + _reg.X) & 0xFF);
-                var low = _bus[zAddress];
-                _cycles++;
-                var high = _bus[(ushort) (zAddress + 1)];
-                _cycles++;
-                var address = (ushort) ((high << 8) + low);
-                _cycles++;
-                var val = _bus[address];
-                _cycles++;
-                return val;
+                var address = ReadUShort(zAddress);
+                return _bus[address];
             }
             case AddressMode.INY:
             {
+                _cycles += 4;
                 var zAddress = ReadImmediateByte();
-                _cycles++;
-                var addressBaseLow = _bus[zAddress];
-                _cycles++;
-                var addressBaseHigh = _bus[(ushort) (zAddress + 1)];
-                _cycles++;
-                var addressBase = (ushort) ((addressBaseHigh << 8) + addressBaseLow);
+                var addressBase = ReadUShort(zAddress);
                 var address = (ushort) (addressBase + _reg.Y);
-                if ((addressBaseLow + _reg.Y) > 256) _cycles++;
-                var val = _bus[address];
-                _cycles++;
-                return val;
+                if ((addressBase & 0xFF) + _reg.Y > 256) _cycles++;
+                return _bus[address];
             }
             case AddressMode.REL:
             {
-                var offset = ReadImmediateByte();
                 _cycles++;
-                return offset;
+                return ReadImmediateByte();
             }
             default:
                 throw new NotImplementedException();
