@@ -17,7 +17,6 @@ public class Processor : IProcessor
     {
         _alu = new ALU(_reg);
         _bus = bus;
-        Reset();
     }
 
     public void ExecuteClock()
@@ -25,31 +24,15 @@ public class Processor : IProcessor
         if (!IsExecuting)
         {
             var val = ReadImmediateByte();
-            _cycles++;
-
-            var (instruction, mode) = OpcodeParser.Parse(val);
-            var operand = ReadOperand(mode, out var address);
-            Execute(instruction, operand, address);
+            var (_, instruction, mode, cycles) = Opcode.Map[val];
+            var extraCycles = Execute(instruction, mode);
+            _cycles = cycles + extraCycles;
         }
 
         _cycles--;
     }
 
-    public void Reset()
-    {
-        _reg.I = true;
-        // TODO: Decrement SP?
-    }
-
-    public void Interrupt()
-    {
-        throw new NotImplementedException();
-    }
-
-    public void InterruptNonMaskable()
-    {
-        throw new NotImplementedException();
-    }
+    #region Read Bus
 
     private byte ReadImmediateByte()
     {
@@ -70,136 +53,157 @@ public class Processor : IProcessor
         return (ushort) ((high << 8) + low);
     }
 
-    private byte ReadOperand(AddressMode mode, out ushort? outAddress)
+    private byte ReadByte(AddressMode mode)
     {
-        outAddress = null;
-        switch (mode)
-        {
-            case AddressMode.IMP:
-            {
-                _cycles++;
-                return _reg.A;
-            }
-            case AddressMode.IMM:
-            {
-                _cycles++;
-                return ReadImmediateByte();
-            }
-            case AddressMode.ZPG:
-            {
-                _cycles += 2;
-                var address = ReadImmediateByte();
-                outAddress = address;
-                return _bus[address];
-            }
-            case AddressMode.ZPX:
-            {
-                _cycles += 3;
-                var addressBase = ReadImmediateByte();
-                var address = (byte)((addressBase + _reg.X) & 0xFF);
-                return _bus[address];
-            }
-            case AddressMode.ABS:
-            {
-                _cycles += 3;
-                var address = ReadImmediateUShort();
-                outAddress = address;
-                return _bus[address];
-            }
-            case AddressMode.ABX:
-            {
-                _cycles += 3;
-                var addressBase = ReadImmediateUShort();
-                var address = (ushort) (addressBase + _reg.X);
-                if ((addressBase & 0xFF) + _reg.X > 256) _cycles++;
-                return _bus[address];
-            }
-            case AddressMode.ABY:
-            {
-                _cycles += 3;
-                var addressBase = ReadImmediateUShort();
-                var address = (ushort) (addressBase + _reg.Y);
-                if ((addressBase & 0xFF) + _reg.Y > 256) _cycles++;
-                return _bus[address];
-            }
-            case AddressMode.INX:
-            {
-                _cycles += 5;
-                var zAddressBase = ReadImmediateByte();
-                var zAddress = (ushort) ((zAddressBase + _reg.X) & 0xFF);
-                var address = ReadUShort(zAddress);
-                return _bus[address];
-            }
-            case AddressMode.INY:
-            {
-                _cycles += 4;
-                var zAddress = ReadImmediateByte();
-                var addressBase = ReadUShort(zAddress);
-                var address = (ushort) (addressBase + _reg.Y);
-                if ((addressBase & 0xFF) + _reg.Y > 256) _cycles++;
-                return _bus[address];
-            }
-            case AddressMode.REL:
-            {
-                _cycles++;
-                return ReadImmediateByte();
-            }
-            default:
-                throw new NotImplementedException();
-        }
+        return ReadOperand(mode, out _);
     }
 
-    private void Execute(Instruction instruction, byte operand, ushort? address)
+    private byte ReadByte(AddressMode mode, out bool pageCross)
     {
+        return ReadOperand(mode, out pageCross);
+    }
+
+    private byte ReadOperand(AddressMode mode, out bool pageCross)
+    {
+        pageCross = false;
+        return mode switch
+        {
+            AddressMode.IMM => ReadImmediateByte(),
+            AddressMode.ZPG => _bus[ReadImmediateByte()],
+            AddressMode.ZPX => _bus[(byte) ((ReadImmediateByte() + _reg.X) & 0xFF)],
+            AddressMode.ABS => _bus[ReadImmediateUShort()],
+            AddressMode.ABX => ReadAbsoluteX(out pageCross),
+            AddressMode.ABY => ReadAbsoluteY(out pageCross),
+            AddressMode.INX => ReadIndexedX(),
+            AddressMode.INY => ReadIndexedY(out pageCross),
+            _ => throw new NotImplementedException()
+        };
+    }
+
+    private byte ReadAbsoluteX(out bool pageCross)
+    {
+        var addressBase = ReadImmediateUShort();
+        var address = (ushort) (addressBase + _reg.X);
+
+        pageCross = (addressBase & 0xFF) + _reg.X > 256;
+        return _bus[address];
+    }
+
+    private byte ReadAbsoluteY(out bool pageCross)
+    {
+        var addressBase = ReadImmediateUShort();
+        var address = (ushort) (addressBase + _reg.Y);
+
+        pageCross = (addressBase & 0xFF) + _reg.Y > 256;
+        return _bus[address];
+    }
+
+    private byte ReadIndexedX()
+    {
+        var zAddressBase = ReadImmediateByte();
+        var zAddress = (ushort) ((zAddressBase + _reg.X) & 0xFF);
+        var address = ReadUShort(zAddress);
+
+        return _bus[address];
+    }
+
+    private byte ReadIndexedY(out bool pageCross)
+    {
+        var zAddress = ReadImmediateByte();
+        var addressBase = ReadUShort(zAddress);
+        var address = (ushort) (addressBase + _reg.Y);
+
+        pageCross = (addressBase & 0xFF) + _reg.Y > 256;
+        return _bus[address];
+    }
+
+    private ushort ReadAddress(AddressMode mode) => mode switch
+    {
+        AddressMode.ZPG => ReadImmediateByte(),
+        AddressMode.ABS => ReadImmediateUShort(),
+        _ => throw new NotImplementedException()
+    };
+
+    #endregion
+
+    private int Execute(Instruction instruction, AddressMode mode)
+    {
+        bool pageCross;
         switch (instruction)
         {
             case Instruction.ADC:
-                _alu.AddWithCarry(operand);
+                _alu.AddWithCarry(ReadByte(mode, out pageCross));
+                if (pageCross) return 1;
                 break;
             case Instruction.AND:
-                _alu.LogicalAnd(operand);
+                _alu.LogicalAnd(ReadByte(mode, out pageCross));
+                if (pageCross) return 1;
                 break;
             case Instruction.ASL:
-                if (address.HasValue)
-                {
-                    _bus[address.Value] = _alu.ArithmeticShiftLeft(operand);
-                    _cycles += 2;
-                }
-                else
+                if (mode == AddressMode.IMP)
                 {
                     _reg.A = _alu.ArithmeticShiftLeft(_reg.A);
                 }
+                else
+                {
+                    var address = ReadAddress(mode);
+                    _bus[address] = _alu.ArithmeticShiftLeft(_bus[address]);
+                }
                 break;
             case Instruction.BCC:
-                BranchIfCarryClear(operand);
+            {
+                var offset = ReadImmediateByte().ToSByte();
+                if (!_reg.C) return Branch(offset);
                 break;
+            }
             case Instruction.BCS:
-                BranchIfCarrySet(operand);
+            {
+                var offset = ReadImmediateByte().ToSByte();
+                if (_reg.C) return Branch(offset);
                 break;
+            }
             case Instruction.BEQ:
-                BranchIfEqual(operand);
+            {
+                var offset = ReadImmediateByte().ToSByte();
+                if (_reg.Z) return Branch(offset);
                 break;
+            }
             case Instruction.BIT:
-                _alu.BitTest(operand);
+                _alu.BitTest(ReadByte(mode));
                 break;
             case Instruction.BMI:
-                BranchIfMinus(operand);
+            {
+                var offset = ReadImmediateByte().ToSByte();
+                if (_reg.N) return Branch(offset);
                 break;
+            }
             case Instruction.BNE:
-                BranchIfNotEqual(operand);
+            {
+                var offset = ReadImmediateByte().ToSByte();
+                if (!_reg.Z) return Branch(offset);
                 break;
+            }
             case Instruction.BPL:
-                BranchIfPositive(operand);
+            {
+                var offset = ReadImmediateByte().ToSByte();
+                if (!_reg.N) return Branch(offset);
                 break;
+            }
             case Instruction.BRK:
                 Break();
                 break;
             case Instruction.BVC:
-                BranchIfOverflowClear(operand);
+            {
+                var offset = ReadImmediateByte().ToSByte();
+                if (!_reg.V) return Branch(offset);
                 break;
+            }
             case Instruction.BVS:
-                BranchIfOverflowSet(operand);
+            {
+                var offset = ReadImmediateByte().ToSByte();
+                if (_reg.V) return Branch(offset);
                 break;
+            }
             case Instruction.CLC:
                 _reg.C = false;
                 break;
@@ -213,20 +217,21 @@ public class Processor : IProcessor
                 _reg.V = false;
                 break;
             case Instruction.CMP:
-                _alu.Compare(operand);
+                _alu.Compare(ReadByte(mode, out pageCross));
+                if (pageCross) return 1;
                 break;
             case Instruction.CPX:
-                _alu.CompareX(operand);
+                _alu.CompareX(ReadByte(mode, out pageCross));
+                if (pageCross) return 1;
                 break;
             case Instruction.CPY:
-                _alu.CompareY(operand);
+                _alu.CompareY(ReadByte(mode, out pageCross));
+                if (pageCross) return 1;
                 break;
             case Instruction.DEC:
             {
-                var result = _alu.Decrement(operand);
-                _cycles++;
-                _bus[address!.Value] = result;
-                _cycles++;
+                var address = ReadAddress(mode);
+                _bus[address] = _alu.Decrement(_bus[address]);
                 break;
             }
             case Instruction.DEX:
@@ -236,14 +241,13 @@ public class Processor : IProcessor
                 _alu.DecrementY();
                 break;
             case Instruction.EOR:
-                _alu.ExclusiveOr(operand);
+                _alu.ExclusiveOr(ReadByte(mode, out pageCross));
+                if (pageCross) return 1;
                 break;
             case Instruction.INC:
             {
-                var result = _alu.Increment(operand);
-                _cycles++;
-                _bus[address!.Value] = result;
-                _cycles++;
+                var address = ReadAddress(mode);
+                _bus[address] = _alu.Increment(_bus[address]);
                 break;
             }
             case Instruction.INX:
@@ -253,98 +257,97 @@ public class Processor : IProcessor
                 _alu.IncrementY();
                 break;
             case Instruction.JMP:
-                _reg.PC = address!.Value;
-                // Didn't actually need to read the address - so don't maybe?
-                _cycles--;
+                _reg.PC = ReadAddress(mode);
                 break;
             case Instruction.JSR:
                 Push(_reg.PC);
-                _reg.PC = address!.Value;
-                _cycles += 2;
+                _reg.PC = ReadAddress(mode);
                 break;
             case Instruction.LDA:
-                _reg.A = operand;
+            {
+                _reg.A = ReadByte(mode, out pageCross);
+                if (pageCross) return 1;
                 break;
+            }
             case Instruction.LDX:
-                _reg.X = operand;
+            {
+                _reg.X = ReadByte(mode, out pageCross);
+                if (pageCross) return 1;
                 break;
+            }
             case Instruction.LDY:
-                _reg.Y = operand;
+            {
+                _reg.Y = ReadByte(mode, out pageCross);
+                if (pageCross) return 1;
                 break;
+            }
             case Instruction.LSR:
-                if (address.HasValue)
+                if (mode == AddressMode.IMP)
                 {
-                    var result = _alu.LogicalShiftRight(operand);
-                    _bus[address.Value] = result;
-                    _cycles += 2;
+                    _reg.A = _alu.LogicalShiftRight(_reg.A);
                 }
                 else
                 {
-                    _reg.A = _alu.LogicalShiftRight(operand);
+                    var address = ReadAddress(mode);
+                    _bus[address] = _alu.LogicalShiftRight(_bus[address]);
                 }
                 break;
             case Instruction.NOP:
                 break;
             case Instruction.ORA:
-                _alu.LogicalInclusiveOr(operand);
+                _alu.LogicalInclusiveOr(ReadByte(mode, out pageCross));
+                if (pageCross) return 1;
                 break;
             case Instruction.PHA:
                 Push(_reg.A);
-                _cycles++;
                 break;
             case Instruction.PHP:
                 _reg.B = true;
                 Push(_reg.P);
-                _cycles++;
                 break;
             case Instruction.PLA:
                 _reg.A = PullByte();
-                _cycles += 2;
                 break;
             case Instruction.PLP:
                 _reg.P = PullByte();
-                _cycles += 2;
                 break;
             case Instruction.ROL:
-                if (address.HasValue)
-                {
-                    var result = _alu.RotateLeft(operand);
-                    _bus[address.Value] = result;
-                    _cycles += 2;
-                }
-                else
+                if (mode == AddressMode.IMP)
                 {
                     _reg.A = _alu.RotateLeft(_reg.A);
                 }
+                else
+                {
+                    var address = ReadAddress(mode);
+                    _bus[address] = _alu.RotateLeft(_bus[address]);
+                }
                 break;
             case Instruction.ROR:
-                if (address.HasValue)
+                if (mode == AddressMode.IMP)
                 {
-                    var result = _alu.RotateRight(operand);
-                    _bus[address.Value] = result;
-                    _cycles += 2;
+                    _reg.A = _alu.RotateRight(_reg.A);
                 }
                 else
                 {
-                    _reg.A = _alu.RotateRight(_reg.A);
+                    var address = ReadAddress(mode);
+                    _bus[address] = _alu.RotateRight(_bus[address]);
                 }
                 break;
             case Instruction.RTI:
             {
                 _reg.P = PullByte();
                 _reg.PC = PullUShort();
-                _cycles += 4;
                 break;
             }
             case Instruction.RTS:
             {
                 _reg.PC = PullUShort();
                 _reg.PC--;
-                _cycles += 4;
                 break;
             }
             case Instruction.SBC:
-                _alu.SubtractWithCarry(operand);
+                _alu.SubtractWithCarry(ReadByte(mode, out pageCross));
+                if (pageCross) return 1;
                 break;
             case Instruction.SEC:
                 _alu.SetCarry();
@@ -356,20 +359,14 @@ public class Processor : IProcessor
                 _alu.SetInterruptDisable();
                 break;
             case Instruction.STA:
-            {
-                _bus[address!.Value] = _reg.A;
+                _bus[ReadAddress(mode)] = _reg.A;
                 break;
-            }
             case Instruction.STX:
-            {
-                _bus[address!.Value] = _reg.X;
+                _bus[ReadAddress(mode)] = _reg.X;
                 break;
-            }
             case Instruction.STY:
-            {
-                _bus[address!.Value] = _reg.Y;
+                _bus[ReadAddress(mode)] = _reg.Y;
                 break;
-            }
             case Instruction.TAX:
                 _alu.TransferAtoX();
                 break;
@@ -391,63 +388,15 @@ public class Processor : IProcessor
             default:
                 throw new NotImplementedException();
         }
+
+        return 0;
     }
 
-    private void BranchIfCarryClear(byte value)
+    private int Branch(sbyte offset)
     {
-        if (!_reg.C)
-            BranchWithOffset(value);
-    }
-
-    private void BranchIfCarrySet(byte value)
-    {
-        if (_reg.C)
-            BranchWithOffset(value);
-    }
-
-    private void BranchIfEqual(byte value)
-    {
-        if (_reg.Z)
-            BranchWithOffset(value);
-    }
-
-    private void BranchIfMinus(byte value)
-    {
-        if (_reg.N)
-            BranchWithOffset(value);
-    }
-
-    private void BranchIfNotEqual(byte value)
-    {
-        if (!_reg.Z)
-            BranchWithOffset(value);
-    }
-
-    private void BranchIfPositive(byte value)
-    {
-        if (!_reg.N)
-            BranchWithOffset(value);
-    }
-
-    private void BranchIfOverflowClear(byte value)
-    {
-        if (!_reg.V)
-            BranchWithOffset(value);
-    }
-
-    private void BranchIfOverflowSet(byte value)
-    {
-        if (_reg.V)
-            BranchWithOffset(value);
-    }
-
-    private void BranchWithOffset(byte value)
-    {
-        var offset = value.ToSByte();
-        _cycles++;
         var mod = offset + (_reg.PC & 0xFF);
-        if (mod is < 0 or > 256) _cycles++;
         _reg.PC = (ushort) (_reg.PC + offset);
+        return mod is < 0 or > 256 ? 2 : 1;
     }
 
     private void Break()
