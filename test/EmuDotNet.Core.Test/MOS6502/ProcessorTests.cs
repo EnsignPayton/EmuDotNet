@@ -1006,6 +1006,8 @@ public class ProcessorTests
 
     #endregion
 
+    #region CMP
+
     [Fact]
     public void CMP_IMM()
     {
@@ -1019,6 +1021,180 @@ public class ProcessorTests
         Assert.True(target.Registers.Z);
         Assert.False(target.Registers.N);
     }
+
+    [Fact]
+    public void CMP_ZPG()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Bus[0x0010] = 0xA5;
+        target.Bus[0x8000] = 0xC5;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 3);
+
+        Assert.True(target.Registers.Z);
+        Assert.False(target.Registers.N);
+    }
+
+    [Fact]
+    public void CMP_ZPX()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Registers.X = 0x04;
+        target.Bus[0x0014] = 0xA5;
+        target.Bus[0x8000] = 0xD5;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 4);
+
+        Assert.True(target.Registers.Z);
+        Assert.False(target.Registers.N);
+    }
+
+    [Fact]
+    public void CMP_ABS()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Bus[0x1234] = 0xA5;
+        target.Bus[0x8000] = 0xCD;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 4);
+
+        Assert.True(target.Registers.Z);
+        Assert.False(target.Registers.N);
+    }
+
+    [Fact]
+    public void CMP_ABX()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Registers.X = 0x04;
+        target.Bus[0x1238] = 0xA5;
+        target.Bus[0x8000] = 0xDD;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 4);
+
+        Assert.True(target.Registers.Z);
+        Assert.False(target.Registers.N);
+    }
+
+    [Fact]
+    public void CMP_ABX_PageCross()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Registers.X = 0x04;
+        target.Bus[0x1203] = 0xA5;
+        target.Bus[0x8000] = 0xDD;
+        target.Bus[0x8001] = 0xFF;
+        target.Bus[0x8002] = 0x11;
+
+        ExecuteCycles(target, 5);
+
+        Assert.True(target.Registers.Z);
+        Assert.False(target.Registers.N);
+    }
+
+    [Fact]
+    public void CMP_ABY()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Registers.Y = 0x04;
+        target.Bus[0x1238] = 0xA5;
+        target.Bus[0x8000] = 0xD9;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 4);
+
+        Assert.True(target.Registers.Z);
+        Assert.False(target.Registers.N);
+    }
+
+    [Fact]
+    public void CMP_ABY_PageCross()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Registers.Y = 0x04;
+        target.Bus[0x1203] = 0xA5;
+        target.Bus[0x8000] = 0xD9;
+        target.Bus[0x8001] = 0xFF;
+        target.Bus[0x8002] = 0x11;
+
+        ExecuteCycles(target, 5);
+
+        Assert.True(target.Registers.Z);
+        Assert.False(target.Registers.N);
+    }
+
+    [Fact]
+    public void CMP_INX()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Registers.X = 0x04;
+        target.Bus[0x0014] = 0x34;
+        target.Bus[0x0015] = 0x12;
+        target.Bus[0x1234] = 0xA5;
+        target.Bus[0x8000] = 0xC1;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 6);
+
+        Assert.True(target.Registers.Z);
+        Assert.False(target.Registers.N);
+    }
+
+
+    [Fact]
+    public void CMP_INY()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Registers.Y = 0x04;
+        target.Bus[0x0010] = 0x34;
+        target.Bus[0x0011] = 0x12;
+        target.Bus[0x1238] = 0xA5;
+        target.Bus[0x8000] = 0xD1;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 5);
+
+        Assert.True(target.Registers.Z);
+        Assert.False(target.Registers.N);
+    }
+
+    [Fact]
+    public void CMP_INY_PageCross()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xA5;
+        target.Registers.Y = 0x04;
+        target.Bus[0x0010] = 0xFF;
+        target.Bus[0x0011] = 0x11;
+        target.Bus[0x1203] = 0xA5;
+        target.Bus[0x8000] = 0xD1;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 6);
+
+        Assert.True(target.Registers.Z);
+        Assert.False(target.Registers.N);
+    }
+
+    #endregion
+
+    #region CPX
 
     [Fact]
     public void CPX_IMM()
@@ -1035,6 +1211,41 @@ public class ProcessorTests
     }
 
     [Fact]
+    public void CPX_ZPG()
+    {
+        var target = GetTarget();
+        target.Registers.X = 0xA5;
+        target.Bus[0x0010] = 0xA5;
+        target.Bus[0x8000] = 0xE4;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 3);
+
+        Assert.True(target.Registers.Z);
+        Assert.False(target.Registers.N);
+    }
+
+    [Fact]
+    public void CPX_ABS()
+    {
+        var target = GetTarget();
+        target.Registers.X = 0xA5;
+        target.Bus[0x1234] = 0xA5;
+        target.Bus[0x8000] = 0xEC;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 4);
+
+        Assert.True(target.Registers.Z);
+        Assert.False(target.Registers.N);
+    }
+
+    #endregion
+
+    #region CPY
+
+    [Fact]
     public void CPY_IMM()
     {
         var target = GetTarget();
@@ -1047,6 +1258,39 @@ public class ProcessorTests
         Assert.True(target.Registers.Z);
         Assert.False(target.Registers.N);
     }
+
+    [Fact]
+    public void CPY_ZPG()
+    {
+        var target = GetTarget();
+        target.Registers.Y = 0xA5;
+        target.Bus[0x0010] = 0xA5;
+        target.Bus[0x8000] = 0xC4;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 3);
+
+        Assert.True(target.Registers.Z);
+        Assert.False(target.Registers.N);
+    }
+
+    [Fact]
+    public void CPY_ABS()
+    {
+        var target = GetTarget();
+        target.Registers.Y = 0xA5;
+        target.Bus[0x1234] = 0xA5;
+        target.Bus[0x8000] = 0xCC;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 4);
+
+        Assert.True(target.Registers.Z);
+        Assert.False(target.Registers.N);
+    }
+
+    #endregion
 
     [Fact]
     public void DEC_ZPG()
