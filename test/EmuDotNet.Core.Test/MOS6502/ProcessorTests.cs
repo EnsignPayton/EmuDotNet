@@ -399,14 +399,29 @@ public class ProcessorTests
     public void ASL_ABS()
     {
         var target = GetTarget();
+        target.Bus[0x1234] = 0xA5;
         target.Bus[0x8000] = 0x0E;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 6);
+
+        Assert.Equal(0x4A, target.Bus[0x1234]);
     }
 
-    [Fact]
+    [Fact(Skip = "TODO: Make this work")]
     public void ASL_ABX()
     {
         var target = GetTarget();
+        target.Registers.X = 0x04;
+        target.Bus[0x1238] = 0xA5;
         target.Bus[0x8000] = 0x1E;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 7);
+
+        Assert.Equal(0x4A, target.Bus[0x1238]);
     }
 
     #endregion
