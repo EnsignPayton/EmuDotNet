@@ -1292,6 +1292,8 @@ public class ProcessorTests
 
     #endregion
 
+    #region DEC
+
     [Fact]
     public void DEC_ZPG()
     {
@@ -1304,6 +1306,53 @@ public class ProcessorTests
 
         Assert.Equal(0xA4, target.Bus[0x0010]);
     }
+
+    [Fact]
+    public void DEC_ZPX()
+    {
+        var target = GetTarget();
+        target.Registers.X = 0x04;
+        target.Bus[0x0014] = 0xA5;
+        target.Bus[0x8000] = 0xD6;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 6);
+
+        Assert.Equal(0xA4, target.Bus[0x0014]);
+    }
+
+    [Fact]
+    public void DEC_ABS()
+    {
+        var target = GetTarget();
+        target.Bus[0x1234] = 0xA5;
+        target.Bus[0x8000] = 0xCE;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 6);
+
+        Assert.Equal(0xA4, target.Bus[0x1234]);
+    }
+
+    [Fact]
+    public void DEC_ABX()
+    {
+        var target = GetTarget();
+        target.Registers.X = 0x04;
+        target.Bus[0x1238] = 0xA5;
+        target.Bus[0x8000] = 0xDE;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 7);
+
+        Assert.Equal(0xA4, target.Bus[0x1238]);
+    }
+
+    #endregion
+
+    #region DEX
 
     [Fact]
     public void DEX_IMP()
@@ -1319,6 +1368,10 @@ public class ProcessorTests
         Assert.True(target.Registers.N);
     }
 
+    #endregion
+
+    #region DEY
+
     [Fact]
     public void DEY_IMP()
     {
@@ -1332,6 +1385,8 @@ public class ProcessorTests
         Assert.False(target.Registers.Z);
         Assert.True(target.Registers.N);
     }
+
+    #endregion
 
     [Fact]
     public void EOR_IMM()
