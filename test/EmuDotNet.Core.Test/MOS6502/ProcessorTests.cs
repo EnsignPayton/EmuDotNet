@@ -426,6 +426,8 @@ public class ProcessorTests
 
     #endregion
 
+    #region BCC
+
     [Fact]
     public void BCC_REL_NoBranch()
     {
@@ -477,8 +479,24 @@ public class ProcessorTests
         Assert.Equal(0x7FF2, target.Registers.PC);
     }
 
+    #endregion
+
+    #region BCS
+
     [Fact]
-    public void BCS_REL()
+    public void BCS_REL_NoBranch()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0xB0;
+        target.Bus[0x8001] = 0x04;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0x8002, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BCS_REL_Branch()
     {
         var target = GetTarget();
         target.Registers.C = true;
@@ -491,7 +509,51 @@ public class ProcessorTests
     }
 
     [Fact]
-    public void BEQ_REL()
+    public void BCS_REL_PageCross()
+    {
+        var target = GetTarget();
+        target.Registers.C = true;
+        target.Registers.PC = 0x80F0;
+        target.Bus[0x80F0] = 0xB0;
+        target.Bus[0x80F1] = 0x10;
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0x8102, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BCS_REL_Negative()
+    {
+        const sbyte offset = -16;
+        var target = GetTarget();
+        target.Registers.C = true;
+        target.Bus[0x8000] = 0xB0;
+        target.Bus[0x8001] = offset.ToByte();
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0x7FF2, target.Registers.PC);
+    }
+
+    #endregion
+
+    #region BEQ
+
+    [Fact]
+    public void BEQ_REL_NoBranch()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0xF0;
+        target.Bus[0x8001] = 0x04;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0x8002, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BEQ_REL_Branch()
     {
         var target = GetTarget();
         target.Registers.Z = true;
@@ -502,6 +564,38 @@ public class ProcessorTests
 
         Assert.Equal(0x8006, target.Registers.PC);
     }
+
+    [Fact]
+    public void BEQ_REL_PageCross()
+    {
+        var target = GetTarget();
+        target.Registers.Z = true;
+        target.Registers.PC = 0x80F0;
+        target.Bus[0x80F0] = 0xF0;
+        target.Bus[0x80F1] = 0x10;
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0x8102, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BEQ_REL_Negative()
+    {
+        const sbyte offset = -16;
+        var target = GetTarget();
+        target.Registers.Z = true;
+        target.Bus[0x8000] = 0xF0;
+        target.Bus[0x8001] = offset.ToByte();
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0x7FF2, target.Registers.PC);
+    }
+
+    #endregion
+
+    #region BIT
 
     [Fact]
     public void BIT_ZPG()
@@ -520,6 +614,27 @@ public class ProcessorTests
     }
 
     [Fact]
+    public void BIT_ABS()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0xFF;
+        target.Bus[0x1234] = 0x80;
+        target.Bus[0x8000] = 0x2C;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 4);
+
+        Assert.False(target.Registers.Z);
+        Assert.False(target.Registers.V);
+        Assert.True(target.Registers.N);
+    }
+
+    #endregion
+
+    #region BMI
+
+    [Fact]
     public void BMI_REL()
     {
         var target = GetTarget();
@@ -533,7 +648,77 @@ public class ProcessorTests
     }
 
     [Fact]
-    public void BNE_REL()
+    public void BMI_REL_NoBranch()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0x30;
+        target.Bus[0x8001] = 0x04;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0x8002, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BMI_REL_Branch()
+    {
+        var target = GetTarget();
+        target.Registers.N = true;
+        target.Bus[0x8000] = 0x30;
+        target.Bus[0x8001] = 0x04;
+
+        ExecuteCycles(target, 3);
+
+        Assert.Equal(0x8006, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BMI_REL_PageCross()
+    {
+        var target = GetTarget();
+        target.Registers.N = true;
+        target.Registers.PC = 0x80F0;
+        target.Bus[0x80F0] = 0x30;
+        target.Bus[0x80F1] = 0x10;
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0x8102, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BMI_REL_Negative()
+    {
+        const sbyte offset = -16;
+        var target = GetTarget();
+        target.Registers.N = true;
+        target.Bus[0x8000] = 0x30;
+        target.Bus[0x8001] = offset.ToByte();
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0x7FF2, target.Registers.PC);
+    }
+
+    #endregion BMI
+
+    #region BNE
+
+    [Fact]
+    public void BNE_REL_NoBranch()
+    {
+        var target = GetTarget();
+        target.Registers.Z = true;
+        target.Bus[0x8000] = 0xD0;
+        target.Bus[0x8001] = 0x04;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0x8002, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BNE_REL_Branch()
     {
         var target = GetTarget();
         target.Bus[0x8000] = 0xD0;
@@ -545,7 +730,50 @@ public class ProcessorTests
     }
 
     [Fact]
-    public void BPL_REL()
+    public void BNE_REL_PageCross()
+    {
+        var target = GetTarget();
+        target.Registers.PC = 0x80F0;
+        target.Bus[0x80F0] = 0xD0;
+        target.Bus[0x80F1] = 0x10;
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0x8102, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BNE_REL_Negative()
+    {
+        const sbyte offset = -16;
+        var target = GetTarget();
+        target.Bus[0x8000] = 0xD0;
+        target.Bus[0x8001] = offset.ToByte();
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0x7FF2, target.Registers.PC);
+    }
+
+    #endregion
+
+    #region BPL
+
+    [Fact]
+    public void BPL_REL_NoBranch()
+    {
+        var target = GetTarget();
+        target.Registers.N = true;
+        target.Bus[0x8000] = 0x10;
+        target.Bus[0x8001] = 0x04;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0x8002, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BPL_REL_Branch()
     {
         var target = GetTarget();
         target.Bus[0x8000] = 0x10;
@@ -555,6 +783,36 @@ public class ProcessorTests
 
         Assert.Equal(0x8006, target.Registers.PC);
     }
+
+    [Fact]
+    public void BPL_REL_PageCross()
+    {
+        var target = GetTarget();
+        target.Registers.PC = 0x80F0;
+        target.Bus[0x80F0] = 0x10;
+        target.Bus[0x80F1] = 0x10;
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0x8102, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BPL_REL_Negative()
+    {
+        const sbyte offset = -16;
+        var target = GetTarget();
+        target.Bus[0x8000] = 0x10;
+        target.Bus[0x8001] = offset.ToByte();
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0x7FF2, target.Registers.PC);
+    }
+
+    #endregion
+
+    #region BRK
 
     [Fact]
     public void BRK_IMP()
@@ -570,8 +828,25 @@ public class ProcessorTests
         Assert.Equal(0x1234, target.Registers.PC);
     }
 
+    #endregion
+
+    #region BVC
+
     [Fact]
-    public void BVC_REL()
+    public void BVC_REL_NoBranch()
+    {
+        var target = GetTarget();
+        target.Registers.V = true;
+        target.Bus[0x8000] = 0x50;
+        target.Bus[0x8001] = 0x04;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0x8002, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BVC_REL_Branch()
     {
         var target = GetTarget();
         target.Bus[0x8000] = 0x50;
@@ -583,7 +858,49 @@ public class ProcessorTests
     }
 
     [Fact]
-    public void BVS_REL()
+    public void BVC_REL_PageCross()
+    {
+        var target = GetTarget();
+        target.Registers.PC = 0x80F0;
+        target.Bus[0x80F0] = 0x50;
+        target.Bus[0x80F1] = 0x10;
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0x8102, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BVC_REL_Negative()
+    {
+        const sbyte offset = -16;
+        var target = GetTarget();
+        target.Bus[0x8000] = 0x50;
+        target.Bus[0x8001] = offset.ToByte();
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0x7FF2, target.Registers.PC);
+    }
+
+    #endregion
+
+    #region BVS
+
+    [Fact]
+    public void BVS_REL_NoBranch()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0x70;
+        target.Bus[0x8001] = 0x04;
+
+        ExecuteCycles(target, 2);
+
+        Assert.Equal(0x8002, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BVS_REL_Branch()
     {
         var target = GetTarget();
         target.Registers.V = true;
@@ -594,6 +911,38 @@ public class ProcessorTests
 
         Assert.Equal(0x8006, target.Registers.PC);
     }
+
+    [Fact]
+    public void BVS_REL_PageCross()
+    {
+        var target = GetTarget();
+        target.Registers.V = true;
+        target.Registers.PC = 0x80F0;
+        target.Bus[0x80F0] = 0x70;
+        target.Bus[0x80F1] = 0x10;
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0x8102, target.Registers.PC);
+    }
+
+    [Fact]
+    public void BVS_REL_Negative()
+    {
+        const sbyte offset = -16;
+        var target = GetTarget();
+        target.Registers.V = true;
+        target.Bus[0x8000] = 0x70;
+        target.Bus[0x8001] = offset.ToByte();
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0x7FF2, target.Registers.PC);
+    }
+
+    #endregion
+
+    #region CLC
 
     [Fact]
     public void CLC_IMP()
@@ -607,6 +956,10 @@ public class ProcessorTests
         Assert.False(target.Registers.C);
     }
 
+    #endregion
+
+    #region CLD
+
     [Fact]
     public void CLD_IMP()
     {
@@ -618,6 +971,10 @@ public class ProcessorTests
 
         Assert.False(target.Registers.D);
     }
+
+    #endregion
+
+    #region CLI
 
     [Fact]
     public void CLI_IMP()
@@ -631,6 +988,10 @@ public class ProcessorTests
         Assert.False(target.Registers.I);
     }
 
+    #endregion
+
+    #region CLV
+
     [Fact]
     public void CLV_IMP()
     {
@@ -642,6 +1003,8 @@ public class ProcessorTests
 
         Assert.False(target.Registers.V);
     }
+
+    #endregion
 
     [Fact]
     public void CMP_IMM()
