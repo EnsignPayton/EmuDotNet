@@ -381,7 +381,7 @@ public class ProcessorTests
         Assert.Equal(0x4A, target.Bus[0x0010]);
     }
 
-    [Fact(Skip = "TODO: Make this work")]
+    [Fact]
     public void ASL_ZPX()
     {
         var target = GetTarget();
@@ -409,7 +409,7 @@ public class ProcessorTests
         Assert.Equal(0x4A, target.Bus[0x1234]);
     }
 
-    [Fact(Skip = "TODO: Make this work")]
+    [Fact]
     public void ASL_ABX()
     {
         var target = GetTarget();

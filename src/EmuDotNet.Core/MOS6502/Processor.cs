@@ -55,29 +55,24 @@ public class Processor : IProcessor
 
     private byte ReadByte(AddressMode mode)
     {
-        return ReadOperand(mode, out _);
+        return ReadByte(mode, out _);
     }
 
     private byte ReadByte(AddressMode mode, out bool pageCross)
     {
-        return ReadOperand(mode, out pageCross);
-    }
-
-    private byte ReadOperand(AddressMode mode, out bool pageCross)
-    {
-        pageCross = false;
-        return mode switch
-        {
-            AddressMode.IMM => ReadImmediateByte(),
-            AddressMode.ZPG => _bus[ReadImmediateByte()],
-            AddressMode.ZPX => _bus[(byte) ((ReadImmediateByte() + _reg.X) & 0xFF)],
-            AddressMode.ABS => _bus[ReadImmediateUShort()],
-            AddressMode.ABX => ReadAbsoluteX(out pageCross),
-            AddressMode.ABY => ReadAbsoluteY(out pageCross),
-            AddressMode.INX => ReadIndexedX(),
-            AddressMode.INY => ReadIndexedY(out pageCross),
-            _ => throw new NotImplementedException()
-        };
+         pageCross = false;
+         return mode switch
+         {
+             AddressMode.IMM => ReadImmediateByte(),
+             AddressMode.ZPG => _bus[ReadImmediateByte()],
+             AddressMode.ZPX => _bus[(byte) ((ReadImmediateByte() + _reg.X) & 0xFF)],
+             AddressMode.ABS => _bus[ReadImmediateUShort()],
+             AddressMode.ABX => ReadAbsoluteX(out pageCross),
+             AddressMode.ABY => ReadAbsoluteY(out pageCross),
+             AddressMode.INX => ReadIndexedX(),
+             AddressMode.INY => ReadIndexedY(out pageCross),
+             _ => throw new NotImplementedException($"No value read defined for address mode {mode}")
+         };
     }
 
     private byte ReadAbsoluteX(out bool pageCross)
@@ -120,8 +115,10 @@ public class Processor : IProcessor
     private ushort ReadAddress(AddressMode mode) => mode switch
     {
         AddressMode.ZPG => ReadImmediateByte(),
+        AddressMode.ZPX => (byte) ((ReadImmediateByte() + _reg.X) & 0xFF),
         AddressMode.ABS => ReadImmediateUShort(),
-        _ => throw new NotImplementedException()
+        AddressMode.ABX => (ushort) (ReadImmediateUShort() + _reg.X),
+        _ => throw new NotImplementedException($"No address read defined for address mode {mode}")
     };
 
     #endregion
@@ -386,7 +383,7 @@ public class Processor : IProcessor
                 _alu.TransferYtoA();
                 break;
             default:
-                throw new NotImplementedException();
+                throw new NotImplementedException($"No implementation defined for instruction {instruction}");
         }
 
         return 0;
