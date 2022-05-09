@@ -1388,20 +1388,183 @@ public class ProcessorTests
 
     #endregion
 
+    #region EOR
+
     [Fact]
     public void EOR_IMM()
     {
         var target = GetTarget();
         target.Registers.A = 0x0F;
         target.Bus[0x8000] = 0x49;
-        target.Bus[0x8001] = 0x33;
+        target.Bus[0x8001] = 0xA5;
 
         ExecuteCycles(target, 2);
 
-        Assert.Equal(0x3C, target.Registers.A);
-        Assert.False(target.Registers.Z);
-        Assert.False(target.Registers.N);
+        Assert.Equal(0xAA, target.Registers.A);
     }
+
+    [Fact]
+    public void EOR_ZPG()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0x0F;
+        target.Bus[0x0010] = 0xA5;
+        target.Bus[0x8000] = 0x45;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 3);
+
+        Assert.Equal(0xAA, target.Registers.A);
+    }
+
+    [Fact]
+    public void EOR_ZPX()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0x0F;
+        target.Registers.X = 0x04;
+        target.Bus[0x0014] = 0xA5;
+        target.Bus[0x8000] = 0x55;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0xAA, target.Registers.A);
+    }
+
+    [Fact]
+    public void EOR_ABS()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0x0F;
+        target.Bus[0x1234] = 0xA5;
+        target.Bus[0x8000] = 0x4D;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0xAA, target.Registers.A);
+    }
+
+    [Fact]
+    public void EOR_ABX()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0x0F;
+        target.Registers.X = 0x04;
+        target.Bus[0x1238] = 0xA5;
+        target.Bus[0x8000] = 0x5D;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0xAA, target.Registers.A);
+    }
+
+    [Fact]
+    public void EOR_ABX_PageCross()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0x0F;
+        target.Registers.X = 0x04;
+        target.Bus[0x1203] = 0xA5;
+        target.Bus[0x8000] = 0x5D;
+        target.Bus[0x8001] = 0xFF;
+        target.Bus[0x8002] = 0x11;
+
+        ExecuteCycles(target, 5);
+
+        Assert.Equal(0xAA, target.Registers.A);
+    }
+
+    [Fact]
+    public void EOR_ABY()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0x0F;
+        target.Registers.Y = 0x04;
+        target.Bus[0x1238] = 0xA5;
+        target.Bus[0x8000] = 0x59;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0xAA, target.Registers.A);
+    }
+
+    [Fact]
+    public void EOR_ABY_PageCross()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0x0F;
+        target.Registers.Y = 0x04;
+        target.Bus[0x1203] = 0xA5;
+        target.Bus[0x8000] = 0x59;
+        target.Bus[0x8001] = 0xFF;
+        target.Bus[0x8002] = 0x11;
+
+        ExecuteCycles(target, 5);
+
+        Assert.Equal(0xAA, target.Registers.A);
+    }
+
+    [Fact]
+    public void EOR_INX()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0x0F;
+        target.Registers.X = 0x04;
+        target.Bus[0x0014] = 0x34;
+        target.Bus[0x0015] = 0x12;
+        target.Bus[0x1234] = 0xA5;
+        target.Bus[0x8000] = 0x41;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 6);
+
+        Assert.Equal(0xAA, target.Registers.A);
+    }
+
+    [Fact]
+    public void EOR_INY()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0x0F;
+        target.Registers.Y = 0x04;
+        target.Bus[0x0010] = 0x34;
+        target.Bus[0x0011] = 0x12;
+        target.Bus[0x1238] = 0xA5;
+        target.Bus[0x8000] = 0x51;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 5);
+
+        Assert.Equal(0xAA, target.Registers.A);
+    }
+
+    [Fact]
+    public void EOR_INY_PageCross()
+    {
+        var target = GetTarget();
+        target.Registers.A = 0x0F;
+        target.Registers.Y = 0x04;
+        target.Bus[0x0010] = 0xFF;
+        target.Bus[0x0011] = 0x11;
+        target.Bus[0x1203] = 0xA5;
+        target.Bus[0x8000] = 0x51;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 6);
+
+        Assert.Equal(0xAA, target.Registers.A);
+    }
+
+    #endregion
+
+    #region INC
 
     [Fact]
     public void INC_ZPG()
@@ -1417,6 +1580,53 @@ public class ProcessorTests
     }
 
     [Fact]
+    public void INC_ZPX()
+    {
+        var target = GetTarget();
+        target.Registers.X = 0x04;
+        target.Bus[0x0014] = 0xA5;
+        target.Bus[0x8000] = 0xF6;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 6);
+
+        Assert.Equal(0xA6, target.Bus[0x0014]);
+    }
+
+    [Fact]
+    public void INC_ABS()
+    {
+        var target = GetTarget();
+        target.Bus[0x1234] = 0xA5;
+        target.Bus[0x8000] = 0xEE;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 6);
+
+        Assert.Equal(0xA6, target.Bus[0x1234]);
+    }
+
+    [Fact]
+    public void INC_ABX()
+    {
+        var target = GetTarget();
+        target.Registers.X = 0x04;
+        target.Bus[0x1238] = 0xA5;
+        target.Bus[0x8000] = 0xFE;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 7);
+
+        Assert.Equal(0xA6, target.Bus[0x1238]);
+    }
+
+    #endregion
+
+    #region INX
+
+    [Fact]
     public void INX_IMP()
     {
         var target = GetTarget();
@@ -1427,6 +1637,10 @@ public class ProcessorTests
 
         Assert.Equal(0xA6, target.Registers.X);
     }
+
+    #endregion
+
+    #region INY
 
     [Fact]
     public void INY_IMP()
@@ -1439,6 +1653,10 @@ public class ProcessorTests
 
         Assert.Equal(0xA6, target.Registers.Y);
     }
+
+    #endregion
+
+    #region JMP
 
     [Fact]
     public void JMP_ABS()
@@ -1454,6 +1672,25 @@ public class ProcessorTests
     }
 
     [Fact]
+    public void JMP_IND()
+    {
+        var target = GetTarget();
+        target.Bus[0x8000] = 0x6C;
+        target.Bus[0x1234] = 0x78;
+        target.Bus[0x1235] = 0x56;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 5);
+
+        Assert.Equal(0x5678, target.Registers.PC);
+    }
+
+    #endregion
+
+    #region JSR
+
+    [Fact]
     public void JSR_ABS()
     {
         var target = GetTarget();
@@ -1467,6 +1704,10 @@ public class ProcessorTests
         Assert.Equal(0x1234, target.Registers.PC);
     }
 
+    #endregion
+
+    #region LDA
+
     [Fact]
     public void LDA_IMM()
     {
@@ -1478,6 +1719,157 @@ public class ProcessorTests
 
         Assert.Equal(0xA5, target.Registers.A);
     }
+
+    [Fact]
+    public void LDA_ZPG()
+    {
+        var target = GetTarget();
+        target.Bus[0x0010] = 0xA5;
+        target.Bus[0x8000] = 0xA5;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 3);
+
+        Assert.Equal(0xA5, target.Registers.A);
+    }
+
+    [Fact]
+    public void LDA_ZPX()
+    {
+        var target = GetTarget();
+        target.Registers.X = 0x04;
+        target.Bus[0x0014] = 0xA5;
+        target.Bus[0x8000] = 0xB5;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0xA5, target.Registers.A);
+    }
+
+    [Fact]
+    public void LDA_ABS()
+    {
+        var target = GetTarget();
+        target.Bus[0x1234] = 0xA5;
+        target.Bus[0x8000] = 0xAD;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0xA5, target.Registers.A);
+    }
+
+    [Fact]
+    public void LDA_ABX()
+    {
+        var target = GetTarget();
+        target.Registers.X = 0x04;
+        target.Bus[0x1238] = 0xA5;
+        target.Bus[0x8000] = 0xBD;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0xA5, target.Registers.A);
+    }
+
+    [Fact]
+    public void LDA_ABX_PageCross()
+    {
+        var target = GetTarget();
+        target.Registers.X = 0x04;
+        target.Bus[0x1203] = 0xA5;
+        target.Bus[0x8000] = 0xBD;
+        target.Bus[0x8001] = 0xFF;
+        target.Bus[0x8002] = 0x11;
+
+        ExecuteCycles(target, 5);
+
+        Assert.Equal(0xA5, target.Registers.A);
+    }
+
+    [Fact]
+    public void LDA_ABY()
+    {
+        var target = GetTarget();
+        target.Registers.Y = 0x04;
+        target.Bus[0x1238] = 0xA5;
+        target.Bus[0x8000] = 0xB9;
+        target.Bus[0x8001] = 0x34;
+        target.Bus[0x8002] = 0x12;
+
+        ExecuteCycles(target, 4);
+
+        Assert.Equal(0xA5, target.Registers.A);
+    }
+
+    [Fact]
+    public void LDA_ABY_PageCross()
+    {
+        var target = GetTarget();
+        target.Registers.Y = 0x04;
+        target.Bus[0x1203] = 0xA5;
+        target.Bus[0x8000] = 0xB9;
+        target.Bus[0x8001] = 0xFF;
+        target.Bus[0x8002] = 0x11;
+
+        ExecuteCycles(target, 5);
+
+        Assert.Equal(0xA5, target.Registers.A);
+    }
+
+    [Fact]
+    public void LDA_INX()
+    {
+        var target = GetTarget();
+        target.Registers.X = 0x04;
+        target.Bus[0x0014] = 0x34;
+        target.Bus[0x0015] = 0x12;
+        target.Bus[0x1234] = 0xA5;
+        target.Bus[0x8000] = 0xA1;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 6);
+
+        Assert.Equal(0xA5, target.Registers.A);
+    }
+
+    [Fact]
+    public void LDA_INY()
+    {
+        var target = GetTarget();
+        target.Registers.Y = 0x04;
+        target.Bus[0x0010] = 0x34;
+        target.Bus[0x0011] = 0x12;
+        target.Bus[0x1238] = 0xA5;
+        target.Bus[0x8000] = 0xB1;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 5);
+
+        Assert.Equal(0xA5, target.Registers.A);
+    }
+
+    [Fact]
+    public void LDA_INY_PageCross()
+    {
+        var target = GetTarget();
+        target.Registers.Y = 0x04;
+        target.Bus[0x0010] = 0xFF;
+        target.Bus[0x0011] = 0x11;
+        target.Bus[0x1203] = 0xA5;
+        target.Bus[0x8000] = 0xB1;
+        target.Bus[0x8001] = 0x10;
+
+        ExecuteCycles(target, 6);
+
+        Assert.Equal(0xA5, target.Registers.A);
+    }
+
+    #endregion
 
     [Fact]
     public void LDX_IMM()

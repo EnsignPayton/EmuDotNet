@@ -118,6 +118,7 @@ public class Processor : IProcessor
         AddressMode.ZPX => (byte) ((ReadImmediateByte() + _reg.X) & 0xFF),
         AddressMode.ABS => ReadImmediateUShort(),
         AddressMode.ABX => (ushort) (ReadImmediateUShort() + _reg.X),
+        AddressMode.IND => ReadUShort(ReadImmediateUShort()),
         _ => throw new NotImplementedException($"No address read defined for address mode {mode}")
     };
 
